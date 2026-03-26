@@ -68,7 +68,7 @@ export default async function CuotasAdminPage({ searchParams }: Props) {
 
   const { data: anios } = await supabase
     .from('cuotas').select('anio').order('anio', { ascending: false })
-  const aniosUnicos = [...new Set((anios ?? []).map(r => r.anio))]
+  const aniosUnicos = Array.from(new Set((anios ?? []).map(r => r.anio)))
 
   const { data: statsData } = await supabase
     .from('cuotas').select('estado, importe').eq('anio', anioFiltro)

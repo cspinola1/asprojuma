@@ -126,8 +126,8 @@ export default async function CarnetPage() {
           <div className="mt-4 flex flex-col items-center gap-3">
             {carnetVigente ? (
               <>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${ESTADO_BADGE[carnetVigente.estado]}`}>
-                  {ESTADO_LABEL[carnetVigente.estado]} · {carnetVigente.anio_vigencia}
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${ESTADO_BADGE[carnetVigente.estado as EstadoCarnet]}`}>
+                  {ESTADO_LABEL[carnetVigente.estado as EstadoCarnet]} · {carnetVigente.anio_vigencia}
                 </span>
                 {carnetVigente.pdf_url ? (
                   <a

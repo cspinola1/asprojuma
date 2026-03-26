@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Socio, TipoSocio, EstadoSocio } from '@/lib/types'
+import { TipoSocio, EstadoSocio } from '@/lib/types'
 
 const BADGE: Record<EstadoSocio, string> = {
   activo: 'bg-green-100 text-green-800',
@@ -188,7 +188,7 @@ export default async function SociosAdminPage({ searchParams }: Props) {
                 </td>
               </tr>
             )}
-            {socios?.map((s: Socio) => (
+            {socios?.map((s) => (
               <tr key={s.id} className="hover:bg-gray-50 transition">
                 <td className="px-4 py-3 font-mono text-gray-500">
                   {s.tipo === 'profesor' ? s.num_socio : `C${s.num_cooperante}`}
@@ -198,8 +198,8 @@ export default async function SociosAdminPage({ searchParams }: Props) {
                 </td>
                 <td className="px-4 py-3 text-gray-500 capitalize">{s.tipo}</td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${BADGE[s.estado]}`}>
-                    {ESTADO_LABEL[s.estado]}
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${BADGE[s.estado as EstadoSocio]}`}>
+                    {ESTADO_LABEL[s.estado as EstadoSocio]}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-gray-500">{s.email_principal ?? '—'}</td>

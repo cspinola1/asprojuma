@@ -15,7 +15,7 @@ export async function aprobarSolicitud(id: number): Promise<{ error?: string }> 
 
   if (!socio) return { error: 'Solicitud no encontrada' }
 
-  let updateData: Record<string, unknown> = {
+  const updateData: Record<string, unknown> = {
     estado: 'activo',
     fecha_ingreso: new Date().toISOString().split('T')[0],
     updated_at: new Date().toISOString(),
