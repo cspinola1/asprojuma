@@ -1,0 +1,30 @@
+ASPROJUMA - Informe de migración
+Fecha: 2026-03-23 21:22
+==================================================
+
+SOCIOS PROFESORES
+  activo              : 73
+  activo_exento       : 11
+  baja                : 18
+  fallecido           : 11
+  TOTAL               : 113
+
+MIEMBROS COOPERANTES
+  activo              : 29
+  baja                : 22
+  fallecido           : 3
+  TOTAL               : 54
+
+IBANs normalizados al formato ES...
+  (Los registros con formato antiguo 20 dígitos se han convertido)
+
+Sin alertas. Todos los registros activos tienen IBAN y DNI.
+
+PRÓXIMOS PASOS:
+  1. Abre Supabase (supabase.com) e inicia sesión
+  2. Ve a tu proyecto ASPROJUMA
+  3. Haz clic en 'SQL Editor' en el menú izquierdo
+  4. Haz clic en '+ New query'
+  5. Pega el contenido de asprojuma_datos.sql
+  6. Haz clic en 'Run' (botón verde)
+  7. Comprueba los resultados de las consultas del Paso 5
