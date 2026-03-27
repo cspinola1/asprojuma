@@ -129,28 +129,22 @@ export default async function CarnetPage() {
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${ESTADO_BADGE[carnetVigente.estado as EstadoCarnet]}`}>
                   {ESTADO_LABEL[carnetVigente.estado as EstadoCarnet]} · {carnetVigente.anio_vigencia}
                 </span>
-                {carnetVigente.pdf_url ? (
-                  <a
-                    href={carnetVigente.pdf_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition"
-                  >
-                    Descargar PDF
-                  </a>
-                ) : (
-                  <p className="text-sm text-gray-500 text-center max-w-xs">
-                    El PDF de este carnet está en preparación.<br />
-                    Recibirás un email cuando esté disponible.
-                  </p>
-                )}
+                <a
+                  href="/api/carnet"
+                  className="bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition"
+                >
+                  Descargar PDF
+                </a>
               </>
             ) : (
-              <div className="mt-2 text-center">
+              <div className="mt-2 text-center flex flex-col items-center gap-3">
                 <p className="text-sm text-gray-500">Aún no tienes un carnet emitido para este año.</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Contacta con <a href="mailto:asprojuma@uma.es" className="underline">asprojuma@uma.es</a> si crees que es un error.
-                </p>
+                <a
+                  href="/api/carnet"
+                  className="bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition"
+                >
+                  Descargar PDF provisional
+                </a>
               </div>
             )}
           </div>
