@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 export async function aprobarSolicitud(id: number): Promise<{ error?: string }> {
@@ -9,7 +10,7 @@ export async function aprobarSolicitud(id: number): Promise<{ error?: string }> 
   // Obtener el socio pendiente
   const { data: socio } = await supabase
     .from('socios')
-    .select('tipo')
+    .select('tipo, email_principal')
     .eq('id', id)
     .single()
 
@@ -54,6 +55,18 @@ export async function aprobarSolicitud(id: number): Promise<{ error?: string }> 
     .eq('estado', 'pendiente')
 
   if (error) return { error: error.message }
+
+  // Enviar email de bienvenida / acceso al portal
+  if (socio.email_principal) {
+    try {
+      const admin = createAdminClient()
+      await admin.auth.admin.inviteUserByEmail(socio.email_principal, {
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=invite`,
+      })
+    } catch {
+      // No bloquear si falla el email
+    }
+  }
 
   revalidatePath('/admin/solicitudes')
   revalidatePath(`/admin/solicitudes/${id}`)

@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export interface SolicitudCoopenanteData {
   // Personales
@@ -32,7 +32,7 @@ export interface SolicitudCoopenanteData {
 export async function enviarSolicitudCooperante(
   data: SolicitudCoopenanteData
 ): Promise<{ error?: string; ok?: boolean }> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // Verificar DNI duplicado
   const { data: existente } = await supabase

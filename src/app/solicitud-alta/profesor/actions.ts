@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export interface SolicitudProfesorData {
   // Personales
@@ -32,7 +32,7 @@ export interface SolicitudProfesorData {
 export async function enviarSolicitudProfesor(
   data: SolicitudProfesorData
 ): Promise<{ error?: string; ok?: boolean }> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // Verificar que no existe ya ese DNI
   const { data: existente } = await supabase
