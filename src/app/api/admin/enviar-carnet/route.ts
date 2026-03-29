@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
   // Enviar email con Resend
   const resend = new Resend(process.env.RESEND_API_KEY)
   const { error: emailError } = await resend.emails.send({
-    from: 'ASPROJUMA <noreply@asprojuma.es>',
+    from: process.env.RESEND_FROM ?? 'ASPROJUMA <onboarding@resend.dev>',
     to: email,
     subject: `Tu carnet de socio ASPROJUMA ${anio}`,
     html: `
