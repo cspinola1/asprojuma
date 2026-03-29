@@ -78,8 +78,9 @@ Datos académicos adicionales exclusivos de socios profesores. Relación 1:1 con
 | Campo | Tipo | Nulo | Clave | Descripción |
 |---|---|---|---|---|
 | `socio_id` | INT | NO | PK / FK → socios(id) | ON DELETE CASCADE |
+| `centro` | VARCHAR(200) | SÍ | | Último centro/facultad de adscripción |
 | `departamento` | VARCHAR(200) | SÍ | | Departamento universitario |
-| `titulacion` | VARCHAR(200) | SÍ | | Área de conocimiento |
+| `area_conocimiento` | VARCHAR(200) | SÍ | | Área de conocimiento |
 | `fecha_jubilacion` | DATE | SÍ | | Fecha de jubilación |
 | `categoria` | VARCHAR(100) | SÍ | | Categoría académica (Catedrático, Titular, etc.) |
 
