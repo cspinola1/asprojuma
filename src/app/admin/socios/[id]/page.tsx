@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Socio, SocioProfesor, EstadoSocio } from '@/lib/types'
 import { InvitarSocio } from './InvitarSocio'
+import { EnviarCarnet } from './EnviarCarnet'
 import { EliminarSocio } from './EliminarSocio'
 
 const BADGE: Record<EstadoSocio, string> = {
@@ -153,6 +154,7 @@ export default async function SocioDetallePage({ params }: { params: { id: strin
               Envía un email de invitación para que el socio establezca su contraseña y acceda al área privada.
             </p>
             <InvitarSocio socioId={s.id} email={s.email_principal} />
+            <EnviarCarnet socioId={s.id} email={s.email_principal} />
           </section>
         )}
 
