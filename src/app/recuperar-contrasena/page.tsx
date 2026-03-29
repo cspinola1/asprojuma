@@ -23,7 +23,7 @@ export default function RecuperarContrasenaPage() {
     })
 
     setCargando(false)
-    if (error) { setError('No se pudo enviar el email. Comprueba la dirección.'); return }
+    if (error) { setError(error.message); return }
     setEnviado(true)
   }
 
