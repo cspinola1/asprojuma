@@ -119,9 +119,9 @@ export async function GET() {
   const verifyUrl = `${appUrl}/verificar/${socio.id}`
   const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 76, margin: 1 })
 
-  const fs = await import('fs')
-  const logoBuffer = fs.readFileSync(`${process.cwd()}/public/logo-uma.png`)
-  const logoBase64 = `data:image/png;base64,${logoBuffer.toString('base64')}`
+  const logoRes = await fetch(`${appUrl}/logo-uma.png`)
+  const logoBuffer = await logoRes.arrayBuffer()
+  const logoBase64 = `data:image/png;base64,${Buffer.from(logoBuffer).toString('base64')}`
 
   const pdfDoc = (
     <Document>
