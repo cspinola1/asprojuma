@@ -9,31 +9,49 @@ export default function AuthConfirmPage() {
   const [msg, setMsg] = useState('Verificando enlace…')
 
   useEffect(() => {
-    const hash = window.location.hash.substring(1)
-
-    if (!hash) {
-      setMsg('Error: no hay token en el enlace. Solicita un nuevo enlace.')
-      return
-    }
-
-    const params = new URLSearchParams(hash)
-    const accessToken = params.get('access_token')
-    const refreshToken = params.get('refresh_token') ?? ''
-
-    if (!accessToken) {
-      setMsg('Error: token inválido. Solicita un nuevo enlace.')
-      return
-    }
-
     const supabase = createClient()
-    supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
-      .then(({ error }) => {
-        if (error) {
-          setMsg(`Error al verificar: ${error.message}`)
-        } else {
-          router.replace('/nueva-contrasena')
-        }
-      })
+    const searchParams = new URLSearchParams(window.location.search)
+
+    // Caso 1: PKCE flow → ?code=...
+    const code = searchParams.get('code')
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code)
+        .then(({ error }) => {
+          if (error) setMsg(`Error al verificar: ${error.message}`)
+          else router.replace('/nueva-contrasena')
+        })
+      return
+    }
+
+    // Caso 2: token_hash directo → ?token_hash=...&type=...
+    const tokenHash = searchParams.get('token_hash')
+    const type = searchParams.get('type') as 'recovery' | 'invite' | 'signup' | 'magiclink' | null
+    if (tokenHash && type) {
+      supabase.auth.verifyOtp({ token_hash: tokenHash, type })
+        .then(({ error }) => {
+          if (error) setMsg(`Error al verificar: ${error.message}`)
+          else router.replace('/nueva-contrasena')
+        })
+      return
+    }
+
+    // Caso 3: Flujo implícito (legacy) → #access_token=...
+    const hash = window.location.hash.substring(1)
+    if (hash) {
+      const params = new URLSearchParams(hash)
+      const accessToken = params.get('access_token')
+      const refreshToken = params.get('refresh_token') ?? ''
+      if (accessToken) {
+        supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+          .then(({ error }) => {
+            if (error) setMsg(`Error al verificar: ${error.message}`)
+            else router.replace('/nueva-contrasena')
+          })
+        return
+      }
+    }
+
+    setMsg(`Error: no hay token. URL: ${window.location.href}`)
   }, [router])
 
   return (
