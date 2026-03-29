@@ -69,6 +69,12 @@ export default async function SocioDetallePage({ params }: { params: { id: strin
           <Link href="/admin/socios" className="text-sm text-blue-600 hover:text-blue-800 mb-2 inline-block">
             ← Volver al listado
           </Link>
+          <Link
+            href={`/admin/socios/${s.id}/editar`}
+            className="ml-4 text-sm text-blue-600 hover:text-blue-800 mb-2 inline-block"
+          >
+            ✏ Editar
+          </Link>
           <h1 className="text-2xl font-bold text-gray-900">
             {s.apellidos}, {s.nombre}
           </h1>
