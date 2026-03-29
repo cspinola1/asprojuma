@@ -46,15 +46,18 @@ export async function enviarSolicitudCooperante(
 
 
   // Verificar que los avalistas son socios profesores activos
-  for (const email of [data.avalista1_email, data.avalista2_email]) {
-    const { data: avalista } = await supabase
+  for (const emailRaw of [data.avalista1_email, data.avalista2_email]) {
+    const email = emailRaw.trim().toLowerCase()
+    const { data: avalistas } = await supabase
       .from('socios')
       .select('id, tipo, estado')
-      .or(`email_uma.eq.${email},email_otros.eq.${email}`)
-      .single()
+      .or(`email_uma.ilike.${email},email_otros.ilike.${email}`)
+      .in('estado', ['activo', 'activo_exento'])
+      .eq('tipo', 'profesor')
+      .limit(1)
 
-    if (!avalista || avalista.tipo !== 'profesor' || !['activo', 'activo_exento'].includes(avalista.estado)) {
-      return { error: `El email ${email} no corresponde a ningún socio profesor activo de ASPROJUMA.` }
+    if (!avalistas?.length) {
+      return { error: `El email ${emailRaw.trim()} no corresponde a ningún socio profesor activo de ASPROJUMA.` }
     }
   }
 
