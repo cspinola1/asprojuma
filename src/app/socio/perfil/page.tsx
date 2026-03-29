@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Socio } from '@/lib/types'
+import { Socio, SocioProfesor } from '@/lib/types'
 import ProfileForm from './ProfileForm'
 
 export default async function PerfilPage() {
@@ -40,7 +40,7 @@ export default async function PerfilPage() {
               Contacta con la secretaría en <a href="mailto:asprojuma@uma.es" className="underline">asprojuma@una.es</a>.</p>
           </div>
         ) : (
-          <ProfileForm socio={socio as Socio} profesorData={(socio as any).socios_profesores ?? null} />
+          <ProfileForm socio={socio as Socio} profesorData={(socio as Socio & { socios_profesores: SocioProfesor | null }).socios_profesores ?? null} />
         )}
       </main>
     </div>
