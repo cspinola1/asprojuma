@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Socio, SocioProfesor, EstadoSocio } from '@/lib/types'
 import { InvitarSocio } from './InvitarSocio'
+import { EliminarSocio } from './EliminarSocio'
 
 const BADGE: Record<EstadoSocio, string> = {
   activo: 'bg-green-100 text-green-800',
@@ -149,11 +150,14 @@ export default async function SocioDetallePage({ params }: { params: { id: strin
           </section>
         )}
 
-        {/* Metadatos */}
-        <section className="text-xs text-gray-400 flex gap-4">
-          <span>Creado: {new Date(s.created_at).toLocaleDateString('es-ES')}</span>
-          <span>Actualizado: {new Date(s.updated_at).toLocaleDateString('es-ES')}</span>
-          {s.migrado_excel && <span className="text-orange-400">Migrado desde Excel</span>}
+        {/* Metadatos + Eliminar */}
+        <section className="text-xs text-gray-400 flex gap-4 items-start justify-between">
+          <div className="flex gap-4">
+            <span>Creado: {new Date(s.created_at).toLocaleDateString('es-ES')}</span>
+            <span>Actualizado: {new Date(s.updated_at).toLocaleDateString('es-ES')}</span>
+            {s.migrado_excel && <span className="text-orange-400">Migrado desde Excel</span>}
+          </div>
+          <EliminarSocio socioId={s.id} nombre={`${s.apellidos}, ${s.nombre}`} />
         </section>
       </div>
     </div>
