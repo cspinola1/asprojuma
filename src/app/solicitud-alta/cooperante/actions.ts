@@ -35,14 +35,25 @@ export async function enviarSolicitudCooperante(
   const supabase = createAdminClient()
 
   // Verificar DNI duplicado
-  const { data: existente } = await supabase
+  const { data: existenteDni } = await supabase
     .from('socios')
     .select('id')
     .eq('dni', data.dni.toUpperCase().trim())
     .single()
-
-  if (existente) {
+  if (existenteDni) {
     return { error: 'Ya existe un socio con ese DNI. Contacta con asprojuma@uma.es si crees que es un error.' }
+  }
+
+  // Verificar email duplicado
+  if (data.email_otros.trim()) {
+    const { data: existenteEmail } = await supabase
+      .from('socios')
+      .select('id')
+      .or(`email_uma.eq.${data.email_otros.trim()},email_otros.eq.${data.email_otros.trim()}`)
+      .single()
+    if (existenteEmail) {
+      return { error: 'Ya existe un socio con ese email. Contacta con asprojuma@uma.es si crees que es un error.' }
+    }
   }
 
   // Verificar que los avalistas son socios profesores activos

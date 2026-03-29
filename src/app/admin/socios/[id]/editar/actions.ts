@@ -38,12 +38,33 @@ export interface EditarSocioData {
   categoria: string
 }
 
+async function checkEmailDuplicado(admin: ReturnType<typeof createAdminClient>, email: string, excludeId: number) {
+  if (!email) return null
+  const { data } = await admin
+    .from('socios')
+    .select('id, nombre, apellidos')
+    .or(`email_uma.eq.${email},email_otros.eq.${email}`)
+    .neq('id', excludeId)
+    .limit(1)
+  return data?.[0] ?? null
+}
+
 export async function editarSocio(
   id: number,
   tipo: string,
   data: EditarSocioData
 ): Promise<{ error?: string }> {
   const admin = createAdminClient()
+
+  // Verificar emails duplicados
+  if (data.email_uma.trim()) {
+    const dup = await checkEmailDuplicado(admin, data.email_uma.trim(), id)
+    if (dup) return { error: `El email UMA ya pertenece a ${dup.apellidos}, ${dup.nombre}` }
+  }
+  if (data.email_otros.trim()) {
+    const dup = await checkEmailDuplicado(admin, data.email_otros.trim(), id)
+    if (dup) return { error: `El email ya pertenece a ${dup.apellidos}, ${dup.nombre}` }
+  }
 
   const { error } = await admin.from('socios').update({
     apellidos: data.apellidos.trim() || null,

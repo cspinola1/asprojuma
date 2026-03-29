@@ -34,15 +34,27 @@ export async function enviarSolicitudProfesor(
 ): Promise<{ error?: string; ok?: boolean }> {
   const supabase = createAdminClient()
 
-  // Verificar que no existe ya ese DNI
-  const { data: existente } = await supabase
+  // Verificar DNI duplicado
+  const { data: existenteDni } = await supabase
     .from('socios')
     .select('id')
     .eq('dni', data.dni.toUpperCase())
     .single()
-
-  if (existente) {
+  if (existenteDni) {
     return { error: 'Ya existe un socio con ese DNI. Contacta con asprojuma@uma.es si crees que es un error.' }
+  }
+
+  // Verificar email duplicado
+  const emailCheck = data.email_uma.trim() || data.email_otros.trim()
+  if (emailCheck) {
+    const { data: existenteEmail } = await supabase
+      .from('socios')
+      .select('id')
+      .or(`email_uma.eq.${emailCheck},email_otros.eq.${emailCheck}`)
+      .single()
+    if (existenteEmail) {
+      return { error: 'Ya existe un socio con ese email. Contacta con asprojuma@uma.es si crees que es un error.' }
+    }
   }
 
   // Insertar en socios
