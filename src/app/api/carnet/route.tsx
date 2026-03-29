@@ -12,29 +12,10 @@ const styles = StyleSheet.create({
   page: {
     width: W,
     height: H,
-    backgroundColor: '#a8d4ed',
+    backgroundColor: '#c8e6f5',
     padding: 10,
     flexDirection: 'column',
     fontFamily: 'Helvetica',
-    position: 'relative',
-  },
-  gradientTop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: H * 0.45,
-    backgroundColor: '#ffffff',
-    opacity: 0.85,
-  },
-  gradientMid: {
-    position: 'absolute',
-    top: H * 0.2,
-    left: 0,
-    right: 0,
-    height: H * 0.35,
-    backgroundColor: '#daeef8',
-    opacity: 0.7,
   },
   header: {
     flexDirection: 'column',
@@ -145,9 +126,6 @@ export async function GET() {
   const pdfDoc = (
     <Document>
       <Page size={[W, H]} style={styles.page}>
-        {/* Capas de degradado simulado */}
-        <View style={styles.gradientTop} />
-        <View style={styles.gradientMid} />
         {/* Cabecera centrada */}
         <View style={styles.header}>
           {/* eslint-disable-next-line jsx-a11y/alt-text */}

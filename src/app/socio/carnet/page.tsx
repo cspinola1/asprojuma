@@ -26,7 +26,7 @@ function CarnetVisual({ socio, carnet, qrDataUrl }: { socio: Socio; carnet?: Car
   return (
     <div
       className="w-full max-w-sm rounded-2xl overflow-hidden shadow-xl text-gray-900 flex flex-col"
-      style={{ background: 'linear-gradient(180deg, #ffffff 0%, #daeef8 40%, #a8d4ed 100%)' }}
+      style={{ background: 'linear-gradient(160deg, #e8f4fb 0%, #c8e6f5 50%, #a8d4ed 100%)' }}
     >
       {/* Cabecera: logo + título centrados */}
       <div className="flex flex-col items-center gap-3 px-8 pt-8 pb-4">
