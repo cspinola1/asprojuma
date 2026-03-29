@@ -12,6 +12,16 @@ export default function AuthConfirmPage() {
     const supabase = createClient()
     const searchParams = new URLSearchParams(window.location.search)
 
+    // Error devuelto por Supabase (token expirado, inválido, etc.)
+    const error = searchParams.get('error_description') ?? searchParams.get('error')
+    if (error) {
+      const msg = error.toLowerCase().includes('expired') || error.toLowerCase().includes('invalid')
+        ? 'El enlace ha caducado o ya fue usado. Solicita uno nuevo.'
+        : `Error: ${error.replace(/\+/g, ' ')}`
+      setMsg(msg)
+      return
+    }
+
     // Caso 1: PKCE flow → ?code=...
     const code = searchParams.get('code')
     if (code) {
