@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import React from 'react'
 import { renderToBuffer, Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer'
 import QRCode from 'qrcode'
@@ -168,6 +169,35 @@ export async function GET() {
   )
 
   const buffer = await renderToBuffer(pdfDoc)
+
+  // Guardar en Supabase Storage y registrar en tabla carnets
+  try {
+    const admin = createAdminClient()
+    const storagePath = `${socio.id}/${anio}.pdf`
+
+    await admin.storage
+      .from('carnets')
+      .upload(storagePath, new Uint8Array(buffer), {
+        contentType: 'application/pdf',
+        upsert: true,
+      })
+
+    const { data: urlData } = admin.storage.from('carnets').getPublicUrl(storagePath)
+
+    await admin.from('carnets').upsert(
+      {
+        socio_id: socio.id,
+        anio_vigencia: anio,
+        estado: 'vigente',
+        fecha_emision: new Date().toISOString().slice(0, 10),
+        fecha_caducidad: `${anio}-12-31`,
+        pdf_url: urlData.publicUrl,
+      },
+      { onConflict: 'socio_id,anio_vigencia' },
+    )
+  } catch {
+    // No bloquear la descarga si falla el guardado
+  }
 
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
