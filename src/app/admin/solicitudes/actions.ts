@@ -61,7 +61,7 @@ export async function aprobarSolicitud(id: number): Promise<{ error?: string }> 
     try {
       const admin = createAdminClient()
       await admin.auth.admin.inviteUserByEmail(socio.email_principal, {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=invite`,
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm`,
       })
     } catch {
       // No bloquear si falla el email

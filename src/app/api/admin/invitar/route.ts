@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   try {
     const adminClient = createAdminClient()
     const { error } = await adminClient.auth.admin.inviteUserByEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=invite`,
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm`,
     })
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
