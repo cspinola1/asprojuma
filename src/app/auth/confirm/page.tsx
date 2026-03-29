@@ -4,22 +4,37 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-// Página intermedia que procesa tokens de invitación y recuperación de contraseña.
-// Supabase envía estos tokens en el hash (#access_token=...) que el servidor nunca ve,
-// por lo que se necesita este componente cliente para leerlo y establecer la sesión.
+// Procesa tokens de invitación y recuperación que llegan en el hash (#access_token=...)
+// createBrowserClient de @supabase/ssr no los parsea automáticamente,
+// por lo que hay que leerlos manualmente y llamar a setSession.
 export default function AuthConfirmPage() {
   const router = useRouter()
 
   useEffect(() => {
+    const hash = window.location.hash.substring(1)
+    if (!hash) {
+      router.replace('/login?error=enlace_invalido')
+      return
+    }
+
+    const params = new URLSearchParams(hash)
+    const accessToken = params.get('access_token')
+    const refreshToken = params.get('refresh_token')
+
+    if (!accessToken || !refreshToken) {
+      router.replace('/login?error=enlace_invalido')
+      return
+    }
+
     const supabase = createClient()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') {
-        router.replace('/nueva-contrasena')
-      }
-    })
-
-    return () => subscription.unsubscribe()
+    supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+      .then(({ error }) => {
+        if (error) {
+          router.replace('/login?error=enlace_invalido')
+        } else {
+          router.replace('/nueva-contrasena')
+        }
+      })
   }, [router])
 
   return (
