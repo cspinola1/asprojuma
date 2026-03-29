@@ -17,8 +17,9 @@ export default function RecuperarContrasenaPage() {
     setError('')
 
     const supabase = createClient()
+    const redirectTo = `${window.location.origin}/auth/confirm`
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm`,
+      redirectTo,
     })
 
     setCargando(false)
