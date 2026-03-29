@@ -1,10 +1,8 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 export function EliminarSocio({ socioId, nombre }: { socioId: number; nombre: string }) {
-  const router = useRouter()
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState('')
 
@@ -15,7 +13,7 @@ export function EliminarSocio({ socioId, nombre }: { socioId: number; nombre: st
     const res = await fetch(`/api/admin/socios/${socioId}`, { method: 'DELETE' })
     const data = await res.json()
     if (data.error) { setError(data.error); setCargando(false); return }
-    router.push('/admin/socios')
+    window.location.href = '/admin/socios'
   }
 
   return (
