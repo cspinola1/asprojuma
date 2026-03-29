@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Cuota, EstadoCuota } from '@/lib/types'
@@ -28,15 +29,18 @@ export default async function CuotasPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: socio } = await supabase
+  const admin = createAdminClient()
+  const { data: socios } = await admin
     .from('socios')
     .select('id, nombre, apellidos, tipo, estado')
     .or(`email_uma.eq.${user.email},email_otros.eq.${user.email}`)
-    .single()
+    .order('id', { ascending: true })
+    .limit(1)
+  const socio = socios?.[0] ?? null
 
   if (!socio) redirect('/socio')
 
-  const { data: cuotas } = await supabase
+  const { data: cuotas } = await admin
     .from('cuotas')
     .select('*')
     .eq('socio_id', socio.id)

@@ -96,15 +96,18 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const { data: socio } = await supabase
+  const admin = createAdminClient()
+  const { data: socios } = await admin
     .from('socios')
     .select('*')
     .or(`email_uma.eq.${user.email},email_otros.eq.${user.email}`)
-    .single()
+    .order('id', { ascending: true })
+    .limit(1)
+  const socio = socios?.[0] ?? null
 
   if (!socio) return NextResponse.json({ error: 'Socio no encontrado' }, { status: 404 })
 
-  const { data: carnets } = await supabase
+  const { data: carnets } = await admin
     .from('carnets')
     .select('*')
     .eq('socio_id', socio.id)
