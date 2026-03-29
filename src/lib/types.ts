@@ -25,7 +25,6 @@ export interface Socio {
   titular_cuenta: string | null
   fecha_ingreso: string | null
   fecha_baja: string | null
-  centro: string | null
   direccion: string | null
   codigo_postal: string | null
   localidad: string | null
@@ -39,6 +38,15 @@ export interface Socio {
   migrado_excel: boolean
   created_at: string
   updated_at: string
+}
+
+export interface SocioProfesor {
+  socio_id: number
+  departamento: string | null
+  area_conocimiento: string | null
+  fecha_jubilacion: string | null
+  categoria: string | null
+  centro: string | null
 }
 
 export type EstadoCuota = 'pendiente' | 'cobrado' | 'devuelto' | 'exento'

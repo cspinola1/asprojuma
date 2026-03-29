@@ -110,7 +110,6 @@ export default function ProfileForm({ socio }: { socio: Socio }) {
           <Campo label="DNI / NIF" valor={socio.dni} />
           <Campo label="Fecha de nacimiento" valor={socio.fecha_nacimiento} />
           <Campo label="Fecha de ingreso" valor={socio.fecha_ingreso} />
-          <Campo label="Centro / Facultad" valor={socio.centro} />
         </dl>
         <p className="mt-4 text-xs text-gray-400">Para modificar estos datos, contacta con la secretaría.</p>
       </section>

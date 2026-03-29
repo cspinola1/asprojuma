@@ -70,7 +70,7 @@ export default async function SociosAdminPage({ searchParams }: Props) {
 
   let query = supabase
     .from('socios')
-    .select('id, tipo, estado, num_socio, num_cooperante, apellidos, nombre, email_principal, centro, fecha_ingreso')
+    .select('id, tipo, estado, num_socio, num_cooperante, apellidos, nombre, email_principal, fecha_ingreso, socios_profesores(centro)')
     .order(dbCol, { ascending: sortDir === 'asc' })
 
   // Ordenación secundaria por apellidos cuando no es la columna principal
@@ -203,7 +203,7 @@ export default async function SociosAdminPage({ searchParams }: Props) {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-gray-500">{s.email_principal ?? '—'}</td>
-                <td className="px-4 py-3 text-gray-500 truncate max-w-[160px]">{s.centro ?? '—'}</td>
+                <td className="px-4 py-3 text-gray-500 truncate max-w-[160px]">{(s as { socios_profesores?: { centro?: string } }).socios_profesores?.centro ?? '—'}</td>
                 <td className="px-4 py-3 text-right">
                   <Link
                     href={`/admin/socios/${s.id}`}

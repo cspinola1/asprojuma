@@ -6,7 +6,7 @@ import { enviarSolicitudProfesor, SolicitudProfesorData } from './actions'
 
 const EMPTY: SolicitudProfesorData = {
   nombre: '', apellidos: '', dni: '', fecha_nacimiento: '',
-  centro: '', departamento: '', titulacion: '', fecha_jubilacion: '', categoria: '',
+  centro: '', departamento: '', area_conocimiento: '', fecha_jubilacion: '', categoria: '',
   email_uma: '', email_otros: '', tel_movil: '', tel_fijo: '',
   direccion: '', codigo_postal: '', localidad: '', provincia: '',
   iban: '', titular_cuenta: '',
@@ -140,7 +140,7 @@ export default function SolicitudProfesorPage() {
                 <input type="text" value={form.departamento} onChange={set('departamento')} className={inputCls} />
               </Field>
               <Field label="Área de Conocimiento">
-                <input type="text" value={form.titulacion} onChange={set('titulacion')} className={inputCls} />
+                <input type="text" value={form.area_conocimiento} onChange={set('area_conocimiento')} className={inputCls} />
               </Field>
               <Field label="Fecha de jubilación" required>
                 <input type="date" value={form.fecha_jubilacion} onChange={set('fecha_jubilacion')} className={inputCls} />

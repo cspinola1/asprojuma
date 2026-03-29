@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Socio, EstadoSocio } from '@/lib/types'
+import { Socio, SocioProfesor, EstadoSocio } from '@/lib/types'
 import { InvitarSocio } from './InvitarSocio'
 
 const BADGE: Record<EstadoSocio, string> = {
@@ -48,7 +48,7 @@ export default async function SocioDetallePage({ params }: { params: { id: strin
   const supabase = await createClient()
   const { data: socio } = await supabase
     .from('socios')
-    .select('*')
+    .select('*, socios_profesores(centro, departamento, area_conocimiento, fecha_jubilacion, categoria)')
     .eq('id', params.id)
     .single()
 
@@ -108,9 +108,24 @@ export default async function SocioDetallePage({ params }: { params: { id: strin
           <Campo label="Provincia" valor={s.provincia} />
         </Seccion>
 
-        {/* Datos académicos / banco */}
-        <Seccion titulo="Datos académicos y bancarios">
-          <Campo label="Centro / Facultad" valor={s.centro} />
+        {/* Datos académicos (solo profesores) */}
+        {s.tipo === 'profesor' && (socio as unknown as { socios_profesores: SocioProfesor }).socios_profesores && (
+          <Seccion titulo="Datos académicos">
+            {(() => {
+              const p = (socio as unknown as { socios_profesores: SocioProfesor }).socios_profesores
+              return <>
+                <Campo label="Centro / Facultad" valor={p.centro} />
+                <Campo label="Departamento" valor={p.departamento} />
+                <Campo label="Área de conocimiento" valor={p.area_conocimiento} />
+                <Campo label="Fecha jubilación" valor={p.fecha_jubilacion} />
+                <Campo label="Categoría" valor={p.categoria} />
+              </>
+            })()}
+          </Seccion>
+        )}
+
+        {/* Bancarios */}
+        <Seccion titulo="Domiciliación bancaria">
           <Campo label="IBAN" valor={s.iban} />
           <Campo label="Titular cuenta" valor={s.titular_cuenta} />
         </Seccion>

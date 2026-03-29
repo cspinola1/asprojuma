@@ -88,9 +88,9 @@ export default async function SolicitudDetallePage({ params }: { params: { id: s
 
         {datosProfesor && (
           <Seccion titulo="Datos académicos">
-            <Campo label="Centro / Facultad" valor={socio.centro} />
+            <Campo label="Centro / Facultad" valor={datosProfesor.centro} />
             <Campo label="Departamento" valor={datosProfesor.departamento} />
-            <Campo label="Área de conocimiento" valor={datosProfesor.titulacion} />
+            <Campo label="Área de conocimiento" valor={datosProfesor.area_conocimiento} />
             <Campo label="Fecha jubilación" valor={datosProfesor.fecha_jubilacion} />
             <Campo label="Categoría" valor={datosProfesor.categoria} />
           </Seccion>

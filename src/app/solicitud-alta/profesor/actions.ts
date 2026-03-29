@@ -11,7 +11,7 @@ export interface SolicitudProfesorData {
   // Académicos
   centro: string
   departamento: string
-  titulacion: string
+  area_conocimiento: string
   fecha_jubilacion: string
   categoria: string
   // Contacto
@@ -55,7 +55,6 @@ export async function enviarSolicitudProfesor(
       apellidos: data.apellidos.trim(),
       dni: data.dni.toUpperCase().trim(),
       fecha_nacimiento: data.fecha_nacimiento || null,
-      centro: data.centro.trim() || null,
       email_uma: data.email_uma.trim() || null,
       email_otros: data.email_otros.trim() || null,
       tel_movil: data.tel_movil.trim() || null,
@@ -80,8 +79,9 @@ export async function enviarSolicitudProfesor(
     .from('socios_profesores')
     .insert({
       socio_id: socio.id,
+      centro: data.centro.trim() || null,
       departamento: data.departamento.trim() || null,
-      titulacion: data.titulacion.trim() || null,
+      area_conocimiento: data.area_conocimiento.trim() || null,
       fecha_jubilacion: data.fecha_jubilacion || null,
       categoria: data.categoria.trim() || null,
     })
