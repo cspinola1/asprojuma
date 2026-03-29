@@ -56,14 +56,10 @@ export async function editarSocio(
 ): Promise<{ error?: string }> {
   const admin = createAdminClient()
 
-  // Verificar emails duplicados
-  if (data.email_uma.trim()) {
+  // Verificar email UMA duplicado (solo para profesores, ya que cooperantes pueden compartir email)
+  if (tipo === 'profesor' && data.email_uma.trim()) {
     const dup = await checkEmailDuplicado(admin, data.email_uma.trim(), id)
     if (dup) return { error: `El email UMA ya pertenece a ${dup.apellidos}, ${dup.nombre}` }
-  }
-  if (data.email_otros.trim()) {
-    const dup = await checkEmailDuplicado(admin, data.email_otros.trim(), id)
-    if (dup) return { error: `El email ya pertenece a ${dup.apellidos}, ${dup.nombre}` }
   }
 
   const { error } = await admin.from('socios').update({
