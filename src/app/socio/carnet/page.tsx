@@ -24,13 +24,12 @@ function CarnetVisual({ socio, carnet }: { socio: Socio; carnet?: Carnet }) {
 
   return (
     <div
-      className="w-full max-w-2xl rounded-xl overflow-hidden shadow-xl text-gray-900"
-      style={{ background: 'linear-gradient(135deg, #e8f4fb 0%, #c8e6f5 50%, #a8d4ed 100%)' }}
+      className="w-full max-w-sm rounded-2xl overflow-hidden shadow-xl text-gray-900 flex flex-col"
+      style={{ background: 'linear-gradient(160deg, #e8f4fb 0%, #c8e6f5 50%, #a8d4ed 100%)' }}
     >
-      {/* Cabecera: logo + título */}
-      <div className="flex items-center gap-5 px-8 pt-7 pb-5">
-        {/* Logo UMA */}
-        <div className="w-36 h-36 flex-shrink-0">
+      {/* Cabecera: logo + título centrados */}
+      <div className="flex flex-col items-center gap-3 px-8 pt-8 pb-4">
+        <div className="w-28 h-28">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo-uma.png"
@@ -38,43 +37,39 @@ function CarnetVisual({ socio, carnet }: { socio: Socio; carnet?: Carnet }) {
             className="w-full h-full object-contain"
           />
         </div>
-
-        {/* Título ASPROJUMA */}
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900 tracking-wide">ASPROJUMA</h2>
-          <p className="text-sm text-gray-700 mt-1">Asociación de Profesores Jubilados de la</p>
-          <p className="text-base font-bold text-gray-900 tracking-wide">UNIVERSIDAD DE MÁLAGA</p>
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 tracking-wide">ASPROJUMA</h2>
+          <p className="text-xs text-gray-700 mt-0.5">Asociación de Profesores Jubilados de la</p>
+          <p className="text-sm font-bold text-gray-900 tracking-wide">UNIVERSIDAD DE MÁLAGA</p>
         </div>
       </div>
 
-      {/* Datos del socio */}
-      <div className="flex items-end justify-between px-8 pb-8 pt-2">
-        {/* Columna izquierda */}
-        <div className="space-y-1.5">
-          <p className="text-base">
-            <span className="font-bold uppercase">Nombre: </span>
-            <span className="font-bold italic">{socio.nombre}</span>
-          </p>
-          <p className="text-base">
-            <span className="font-bold uppercase">Apellidos: </span>
-            <span className="font-bold italic">{socio.apellidos}</span>
-          </p>
-          <p className="font-bold text-base mt-3">
-            {tipoLabel}&nbsp;&nbsp;Nº {num}
-          </p>
-          <p className="font-bold text-base">
-            DNI:&nbsp;&nbsp;{socio.dni ?? '—'}
-          </p>
-        </div>
+      {/* Separador */}
+      <div className="mx-8 border-t border-blue-300/60" />
 
-        {/* Columna derecha */}
-        <div className="text-right">
-          <p className="text-4xl font-bold text-gray-900">Válido {anio}</p>
-          <p className="text-3xl font-bold mt-1">
-            <span style={{ color: '#00a99d' }}>uma</span>
-            <span style={{ color: '#007a73' }}>.es</span>
-          </p>
+      {/* Datos del socio */}
+      <div className="px-8 py-6 space-y-3">
+        <div>
+          <p className="text-xs font-bold uppercase text-gray-500 tracking-wider">Nombre</p>
+          <p className="text-xl font-bold italic text-gray-900">{socio.nombre}</p>
         </div>
+        <div>
+          <p className="text-xs font-bold uppercase text-gray-500 tracking-wider">Apellidos</p>
+          <p className="text-xl font-bold italic text-gray-900">{socio.apellidos}</p>
+        </div>
+        <div className="pt-1">
+          <p className="text-base font-bold text-gray-900">{tipoLabel} Nº {num}</p>
+          <p className="text-base font-bold text-gray-900 mt-1">DNI: {socio.dni ?? '—'}</p>
+        </div>
+      </div>
+
+      {/* Pie: válido + uma.es */}
+      <div className="px-8 pb-7 flex items-center justify-between">
+        <p className="text-3xl font-bold text-gray-900">Válido {anio}</p>
+        <p className="text-2xl font-bold">
+          <span style={{ color: '#00a99d' }}>uma</span>
+          <span style={{ color: '#007a73' }}>.es</span>
+        </p>
       </div>
     </div>
   )
