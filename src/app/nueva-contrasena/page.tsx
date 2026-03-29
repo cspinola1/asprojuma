@@ -25,7 +25,7 @@ export default function NuevaContrasenaPage() {
     setCargando(false)
     if (error) { setError('No se pudo actualizar la contraseña: ' + error.message); return }
 
-    router.push('/socio')
+    router.push('/auth/redirect')
   }
 
   return (

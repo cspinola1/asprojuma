@@ -26,7 +26,7 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/socio')
+    router.push('/auth/redirect')
     router.refresh()
   }
 
