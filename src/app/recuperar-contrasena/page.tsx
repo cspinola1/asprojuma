@@ -23,7 +23,13 @@ export default function RecuperarContrasenaPage() {
     })
 
     setCargando(false)
-    if (error) { setError(error.message); return }
+    if (error) {
+      const msg = error.message.includes('rate limit')
+        ? 'Demasiados intentos. Espera unos minutos antes de volver a intentarlo.'
+        : 'No se pudo enviar el email. Comprueba la dirección o inténtalo más tarde.'
+      setError(msg)
+      return
+    }
     setEnviado(true)
   }
 
