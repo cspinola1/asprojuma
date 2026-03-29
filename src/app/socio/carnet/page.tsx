@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Socio, Carnet, EstadoCarnet } from '@/lib/types'
+import QRCode from 'qrcode'
 
 const ESTADO_BADGE: Record<EstadoCarnet, string> = {
   vigente: 'bg-green-100 text-green-800',
@@ -15,7 +16,7 @@ const ESTADO_LABEL: Record<EstadoCarnet, string> = {
   anulado: 'Anulado',
 }
 
-function CarnetVisual({ socio, carnet }: { socio: Socio; carnet?: Carnet }) {
+function CarnetVisual({ socio, carnet, qrDataUrl }: { socio: Socio; carnet?: Carnet; qrDataUrl: string }) {
   const anio = carnet?.anio_vigencia ?? new Date().getFullYear()
   const tipoLabel = socio.tipo === 'profesor'
     ? 'Socio Profesor Jubilado'
@@ -63,13 +64,17 @@ function CarnetVisual({ socio, carnet }: { socio: Socio; carnet?: Carnet }) {
         </div>
       </div>
 
-      {/* Pie: válido + uma.es */}
-      <div className="px-8 pb-7 flex items-center justify-between">
-        <p className="text-3xl font-bold text-gray-900">Válido {anio}</p>
-        <p className="text-2xl font-bold">
-          <span style={{ color: '#00a99d' }}>uma</span>
-          <span style={{ color: '#007a73' }}>.es</span>
-        </p>
+      {/* Pie: válido + uma.es + QR */}
+      <div className="px-8 pb-7 flex items-end justify-between">
+        <div>
+          <p className="text-3xl font-bold text-gray-900">Válido {anio}</p>
+          <p className="text-2xl font-bold mt-1">
+            <span style={{ color: '#00a99d' }}>uma</span>
+            <span style={{ color: '#007a73' }}>.es</span>
+          </p>
+        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={qrDataUrl} alt="QR verificación" className="w-20 h-20" />
       </div>
     </div>
   )
@@ -97,6 +102,9 @@ export default async function CarnetPage() {
   const carnetVigente = (carnets ?? []).find((c: Carnet) => c.estado === 'vigente')
   const historial = (carnets ?? []).filter((c: Carnet) => c.estado !== 'vigente')
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://asprojuma.vercel.app'
+  const qrDataUrl = await QRCode.toDataURL(`${appUrl}/verificar/${socio.id}`, { width: 160, margin: 1 })
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
@@ -115,7 +123,7 @@ export default async function CarnetPage() {
 
         {/* Carnet visual */}
         <div className="flex flex-col items-center mb-8">
-          <CarnetVisual socio={socio as Socio} carnet={carnetVigente} />
+          <CarnetVisual socio={socio as Socio} carnet={carnetVigente} qrDataUrl={qrDataUrl} />
 
           {/* Estado y acciones */}
           <div className="mt-4 flex flex-col items-center gap-3">

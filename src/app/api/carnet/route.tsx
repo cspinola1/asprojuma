@@ -4,92 +4,90 @@ import React from 'react'
 import { renderToBuffer, Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer'
 import QRCode from 'qrcode'
 
+// Tarjeta vertical: 54mm ancho × 85.6mm alto (CR80 girada)
+const W = 54 * 2.835
+const H = 85.6 * 2.835
+
 const styles = StyleSheet.create({
   page: {
-    width: 85.6 * 2.835,  // 85.6mm en puntos (tamaño tarjeta CR80)
-    height: 54 * 2.835,   // 54mm en puntos
+    width: W,
+    height: H,
     backgroundColor: '#c8e6f5',
     padding: 10,
     flexDirection: 'column',
     fontFamily: 'Helvetica',
   },
   header: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
-    gap: 8,
+    gap: 4,
     marginBottom: 6,
   },
-  logo: {
-    width: 40,
-    height: 40,
-  },
-  titleBlock: {
-    flexDirection: 'column',
-  },
+  logo: { width: 44, height: 44 },
   titleMain: {
-    fontSize: 13,
+    fontSize: 11,
     fontFamily: 'Helvetica-Bold',
     color: '#111827',
     letterSpacing: 1,
+    textAlign: 'center',
   },
   titleSub: {
-    fontSize: 5,
+    fontSize: 4.5,
     color: '#374151',
+    textAlign: 'center',
     marginTop: 1,
   },
   titleUniv: {
-    fontSize: 6,
+    fontSize: 5,
     fontFamily: 'Helvetica-Bold',
     color: '#111827',
     letterSpacing: 0.5,
+    textAlign: 'center',
   },
-  body: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
+  divider: {
+    borderTopWidth: 0.5,
+    borderTopColor: '#93c5d8',
+    marginHorizontal: 4,
+    marginBottom: 6,
+  },
+  dataSection: {
+    paddingHorizontal: 8,
+    gap: 5,
     flex: 1,
   },
-  dataBlock: {
-    flexDirection: 'column',
-    gap: 2,
-  },
-  dataRow: {
-    flexDirection: 'row',
-    fontSize: 6,
-  },
+  dataGroup: { flexDirection: 'column', gap: 1 },
   dataLabel: {
+    fontSize: 4,
     fontFamily: 'Helvetica-Bold',
-    color: '#111827',
+    color: '#4b7a8f',
     textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   dataValue: {
+    fontSize: 8,
     fontFamily: 'Helvetica-BoldOblique',
     color: '#111827',
   },
   tipoText: {
-    fontSize: 6,
+    fontSize: 6.5,
     fontFamily: 'Helvetica-Bold',
     color: '#111827',
     marginTop: 4,
   },
-  rightBlock: {
-    flexDirection: 'column',
+  footer: {
+    paddingHorizontal: 8,
+    paddingBottom: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'flex-end',
-    gap: 4,
   },
   validoText: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: 'Helvetica-Bold',
     color: '#111827',
   },
-  umaText: {
-    fontSize: 11,
-    fontFamily: 'Helvetica-Bold',
-  },
-  qrCode: {
-    width: 36,
-    height: 36,
-  },
+  umaBlock: { flexDirection: 'row' },
+  qrCode: { width: 38, height: 38 },
 })
 
 export async function GET() {
@@ -119,52 +117,51 @@ export async function GET() {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://asprojuma.vercel.app'
   const verifyUrl = `${appUrl}/verificar/${socio.id}`
-  const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 72, margin: 1 })
+  const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 76, margin: 1 })
 
-  // Leer logo como base64
-  const logoPath = `${process.cwd()}/public/logo-uma.png`
   const fs = await import('fs')
-  const logoBuffer = fs.readFileSync(logoPath)
+  const logoBuffer = fs.readFileSync(`${process.cwd()}/public/logo-uma.png`)
   const logoBase64 = `data:image/png;base64,${logoBuffer.toString('base64')}`
 
   const pdfDoc = (
     <Document>
-      <Page size={[85.6 * 2.835, 54 * 2.835]} style={styles.page}>
-        {/* Cabecera */}
+      <Page size={[W, H]} style={styles.page}>
+        {/* Cabecera centrada */}
         <View style={styles.header}>
           {/* eslint-disable-next-line jsx-a11y/alt-text */}
           <Image src={logoBase64} style={styles.logo} />
-          <View style={styles.titleBlock}>
-            <Text style={styles.titleMain}>ASPROJUMA</Text>
-            <Text style={styles.titleSub}>Asociación de Profesores Jubilados de la</Text>
-            <Text style={styles.titleUniv}>UNIVERSIDAD DE MÁLAGA</Text>
-          </View>
+          <Text style={styles.titleMain}>ASPROJUMA</Text>
+          <Text style={styles.titleSub}>Asociación de Profesores Jubilados de la</Text>
+          <Text style={styles.titleUniv}>UNIVERSIDAD DE MÁLAGA</Text>
         </View>
 
-        {/* Cuerpo */}
-        <View style={styles.body}>
-          <View style={styles.dataBlock}>
-            <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>Nombre: </Text>
-              <Text style={styles.dataValue}>{socio.nombre}</Text>
-            </View>
-            <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>Apellidos: </Text>
-              <Text style={styles.dataValue}>{socio.apellidos}</Text>
-            </View>
-            <Text style={styles.tipoText}>{tipoLabel}  Nº {num}</Text>
-            <Text style={styles.tipoText}>DNI:  {socio.dni ?? '—'}</Text>
-          </View>
+        <View style={styles.divider} />
 
-          <View style={styles.rightBlock}>
-            <Text style={styles.validoText}>Válido {anio}</Text>
-            <Text style={styles.umaText}>
-              <Text style={{ color: '#00a99d' }}>uma</Text>
-              <Text style={{ color: '#007a73' }}>.es</Text>
-            </Text>
-            {/* eslint-disable-next-line jsx-a11y/alt-text */}
-            <Image src={qrDataUrl} style={styles.qrCode} />
+        {/* Datos */}
+        <View style={styles.dataSection}>
+          <View style={styles.dataGroup}>
+            <Text style={styles.dataLabel}>Nombre</Text>
+            <Text style={styles.dataValue}>{socio.nombre}</Text>
           </View>
+          <View style={styles.dataGroup}>
+            <Text style={styles.dataLabel}>Apellidos</Text>
+            <Text style={styles.dataValue}>{socio.apellidos}</Text>
+          </View>
+          <Text style={styles.tipoText}>{tipoLabel}  Nº {num}</Text>
+          <Text style={styles.tipoText}>DNI:  {socio.dni ?? '—'}</Text>
+        </View>
+
+        {/* Pie */}
+        <View style={styles.footer}>
+          <View>
+            <Text style={styles.validoText}>Válido {anio}</Text>
+            <View style={styles.umaBlock}>
+              <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: '#00a99d' }}>uma</Text>
+              <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: '#007a73' }}>.es</Text>
+            </View>
+          </View>
+          {/* eslint-disable-next-line jsx-a11y/alt-text */}
+          <Image src={qrDataUrl} style={styles.qrCode} />
         </View>
       </Page>
     </Document>
