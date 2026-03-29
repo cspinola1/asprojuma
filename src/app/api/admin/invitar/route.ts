@@ -20,7 +20,17 @@ export async function POST(request: NextRequest) {
       redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm`,
     })
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    if (error) {
+      // Usuario ya existe → enviar email de recuperación de contraseña
+      if (error.message.toLowerCase().includes('already been registered')) {
+        const { error: resetError } = await adminClient.auth.resetPasswordForEmail(email, {
+          redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm`,
+        })
+        if (resetError) return NextResponse.json({ error: resetError.message }, { status: 400 })
+        return NextResponse.json({ ok: true })
+      }
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
     return NextResponse.json({ ok: true })
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : 'Error desconocido'
