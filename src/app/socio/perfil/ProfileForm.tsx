@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Socio } from '@/lib/types'
+import { Socio, SocioProfesor } from '@/lib/types'
 import { actualizarPerfil, PerfilFormData } from './actions'
 
 function Campo({ label, valor }: { label: string; valor?: string | null }) {
@@ -34,7 +34,7 @@ function InputField({
   )
 }
 
-export default function ProfileForm({ socio }: { socio: Socio }) {
+export default function ProfileForm({ socio, profesorData }: { socio: Socio; profesorData: SocioProfesor | null }) {
   const [editando, setEditando] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [exito, setExito] = useState(false)
@@ -122,6 +122,21 @@ export default function ProfileForm({ socio }: { socio: Socio }) {
           <Campo label="Email principal" valor={socio.email_principal} />
         </dl>
       </section>
+
+      {/* Datos académicos (solo profesores) */}
+      {socio.tipo === 'profesor' && profesorData && (
+        <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Datos académicos</h2>
+          <dl className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <Campo label="Centro / Facultad" valor={profesorData.centro} />
+            <Campo label="Departamento" valor={profesorData.departamento} />
+            <Campo label="Área de conocimiento" valor={profesorData.area_conocimiento} />
+            <Campo label="Fecha de jubilación" valor={profesorData.fecha_jubilacion} />
+            <Campo label="Categoría" valor={profesorData.categoria} />
+          </dl>
+          <p className="mt-4 text-xs text-gray-400">Para modificar estos datos, contacta con la secretaría.</p>
+        </section>
+      )}
 
       {/* Datos editables */}
       <form onSubmit={handleSubmit}>
