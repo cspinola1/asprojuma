@@ -45,6 +45,11 @@ export async function enviarSolicitudProfesor(
     return { error: 'Ya existe un socio con ese DNI. Contacta con asprojuma@uma.es si crees que es un error.' }
   }
 
+  // Verificar que el email UMA sea del dominio @uma.es
+  if (data.email_uma.trim() && !data.email_uma.trim().toLowerCase().endsWith('@uma.es')) {
+    return { error: 'El email UMA debe ser una dirección @uma.es.' }
+  }
+
   // Verificar email UMA duplicado (los profesores tienen email institucional único)
   if (data.email_uma.trim()) {
     const { data: existenteEmail } = await supabase

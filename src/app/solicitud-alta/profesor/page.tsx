@@ -164,7 +164,7 @@ export default function SolicitudProfesorPage() {
             <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Datos de contacto</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Email UMA (@uma.es)">
-                <input type="email" value={form.email_uma} onChange={set('email_uma')} placeholder="usuario@uma.es" className={inputCls} />
+                <input type="email" value={form.email_uma} onChange={set('email_uma')} placeholder="usuario@uma.es" autoComplete="off" className={inputCls} />
               </Field>
               <Field label="Email personal" required>
                 <input type="email" value={form.email_otros} onChange={set('email_otros')} required className={inputCls} />
