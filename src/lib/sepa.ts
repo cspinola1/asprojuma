@@ -19,7 +19,7 @@ export interface ConfigRemesa {
   concepto: string
 }
 
-function ibanToBic(_iban: string): string {
+function ibanToBic(): string {
   // BIC no requerido en zona SEPA desde 2016 — se usa NOTPROVIDED
   return 'NOTPROVIDED'
 }
@@ -93,7 +93,7 @@ function buildPmtInf(
           </CdtrSchmeId>
         </DrctDbtTx>
         <DbtrAgt>
-          <FinInstnId><BIC>${ibanToBic(d.iban)}</BIC></FinInstnId>
+          <FinInstnId><BIC>${ibanToBic()}</BIC></FinInstnId>
         </DbtrAgt>
         <Dbtr>
           <Nm>${escXml(d.nombre)}</Nm>
