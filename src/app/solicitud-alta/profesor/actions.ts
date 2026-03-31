@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { enviarEmailRecepcionSolicitud } from '@/lib/email'
 
 export interface SolicitudProfesorData {
   // Personales
@@ -101,6 +102,14 @@ export async function enviarSolicitudProfesor(
     // Revertir si falla el detalle
     await supabase.from('socios').delete().eq('id', socio.id)
     return { error: errorProf.message }
+  }
+
+  // Enviar email de confirmación de recepción
+  const emailDestino = data.email_uma.trim() || data.email_otros.trim()
+  if (emailDestino) {
+    try {
+      await enviarEmailRecepcionSolicitud(emailDestino, data.nombre.trim(), data.apellidos.trim())
+    } catch { /* No bloquear si falla el email */ }
   }
 
   return { ok: true }

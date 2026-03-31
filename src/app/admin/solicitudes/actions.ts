@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { enviarEmailRechazoSolicitud } from '@/lib/email'
 
 export async function aprobarSolicitud(id: number): Promise<{ error?: string }> {
   const supabase = await createClient()
@@ -82,7 +83,7 @@ export async function rechazarSolicitud(
 
   const { data: socio } = await supabase
     .from('socios')
-    .select('notas')
+    .select('notas, nombre, apellidos, email_principal')
     .eq('id', id)
     .single()
 
@@ -100,6 +101,18 @@ export async function rechazarSolicitud(
     .eq('estado', 'pendiente')
 
   if (error) return { error: error.message }
+
+  // Enviar email de rechazo con observaciones
+  if (socio?.email_principal) {
+    try {
+      await enviarEmailRechazoSolicitud(
+        socio.email_principal,
+        socio.nombre ?? '',
+        socio.apellidos ?? '',
+        motivo,
+      )
+    } catch { /* No bloquear si falla el email */ }
+  }
 
   revalidatePath('/admin/solicitudes')
   revalidatePath(`/admin/solicitudes/${id}`)

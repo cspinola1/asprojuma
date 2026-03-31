@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { enviarEmailRecepcionSolicitud } from '@/lib/email'
 
 export interface SolicitudCoopenanteData {
   // Personales
@@ -103,6 +104,14 @@ export async function enviarSolicitudCooperante(
   if (errorCoop) {
     await supabase.from('socios').delete().eq('id', socio.id)
     return { error: errorCoop.message }
+  }
+
+  // Enviar email de confirmación de recepción
+  const emailDestino = data.email_otros.trim()
+  if (emailDestino) {
+    try {
+      await enviarEmailRecepcionSolicitud(emailDestino, data.nombre.trim(), data.apellidos.trim())
+    } catch { /* No bloquear si falla el email */ }
   }
 
   return { ok: true }
