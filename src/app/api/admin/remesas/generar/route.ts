@@ -4,6 +4,17 @@ import { isAdmin } from '@/lib/admin'
 import { NextRequest, NextResponse } from 'next/server'
 import { generarPain008, DeudorSEPA } from '@/lib/sepa'
 
+function csvCell(v: string | number | null | undefined): string {
+  if (v === null || v === undefined) return ''
+  const s = String(v)
+  if (s.includes(';') || s.includes('"') || s.includes('\n')) return `"${s.replace(/"/g, '""')}"`
+  return s
+}
+
+function csvRow(cols: (string | number | null | undefined)[]): string {
+  return cols.map(csvCell).join(';')
+}
+
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -19,11 +30,12 @@ export async function POST(request: NextRequest) {
     }, { status: 500 })
   }
 
-  const { anio, semestre, fechaCobro, importe } = await request.json() as {
+  const { anio, semestre, fechaCobro, importe, formato } = await request.json() as {
     anio: number
     semestre: 1 | 2
     fechaCobro: string
     importe: number
+    formato: 'xml' | 'csv'
   }
 
   if (!anio || !semestre || !fechaCobro || !importe) {
@@ -32,7 +44,6 @@ export async function POST(request: NextRequest) {
 
   const admin = createAdminClient()
 
-  // Obtener socios activos con IBAN
   const { data: socios, error } = await admin
     .from('socios')
     .select('id, nombre, apellidos, iban, titular_cuenta, fecha_ingreso, num_socio, num_cooperante, tipo')
@@ -43,7 +54,6 @@ export async function POST(request: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!socios?.length) return NextResponse.json({ error: 'No hay socios activos con IBAN' }, { status: 400 })
 
-  // Determinar qué socios ya tienen cuotas cobradas (RCUR) vs primera vez (FRST)
   const { data: cuotasPrevias } = await admin
     .from('cuotas')
     .select('socio_id')
@@ -51,7 +61,6 @@ export async function POST(request: NextRequest) {
     .limit(10000)
 
   const sociosConHistorial = new Set((cuotasPrevias ?? []).map(c => c.socio_id))
-
   const msgId = `ASPROJUMA-${anio}-S${semestre}-${Date.now()}`
   const concepto = `ASPROJUMA cuota ${anio} semestre ${semestre}`
 
@@ -62,7 +71,6 @@ export async function POST(request: NextRequest) {
       const nombre = `${s.apellidos ?? ''} ${s.nombre ?? ''}`.trim()
       const mandatoId = `ASPROJUMA-${String(s.id).padStart(5, '0')}`
       const fechaMandato = s.fecha_ingreso ?? '2004-01-01'
-
       return {
         socioId: s.id,
         nombre: s.titular_cuenta ?? nombre,
@@ -75,6 +83,46 @@ export async function POST(request: NextRequest) {
       }
     })
 
+  // Crear registros de cuota pendientes
+  const cuotasInsert = deudores.map(d => ({
+    socio_id: d.socioId,
+    anio,
+    semestre,
+    importe,
+    estado: 'pendiente',
+    metodo_pago: 'domiciliacion',
+    referencia_remesa: msgId,
+  }))
+  await admin.from('cuotas').upsert(cuotasInsert, { onConflict: 'socio_id,anio,semestre' })
+
+  // CSV
+  if (formato === 'csv') {
+    const headers = csvRow([
+      'Nº Socio', 'Apellidos y nombre', 'Titular cuenta', 'IBAN',
+      'Importe (€)', 'Fecha cobro', 'Referencia mandato', 'Fecha mandato',
+      'Secuencia', 'End-to-End ID',
+    ])
+    const rows = deudores.map((d, i) => {
+      const s = socios[i]
+      const num = s.tipo === 'profesor' ? s.num_socio : `C${s.num_cooperante}`
+      const nombreCompleto = `${s.apellidos ?? ''} ${s.nombre ?? ''}`.trim()
+      return csvRow([
+        num, nombreCompleto, d.nombre, d.iban,
+        d.importe, fechaCobro, d.mandatoId, d.fechaMandato,
+        d.secuencia, d.endToEndId,
+      ])
+    })
+    const bom = '\uFEFF'
+    const csv = bom + [headers, ...rows].join('\r\n')
+    return new NextResponse(csv, {
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="remesa-${anio}-S${semestre}.csv"`,
+      },
+    })
+  }
+
+  // XML (por defecto)
   const xml = generarPain008(
     {
       msgId,
@@ -87,19 +135,6 @@ export async function POST(request: NextRequest) {
     },
     deudores,
   )
-
-  // Crear registros de cuota (estado pendiente)
-  const cuotasInsert = deudores.map(d => ({
-    socio_id: d.socioId,
-    anio,
-    semestre,
-    importe,
-    estado: 'pendiente',
-    metodo_pago: 'domiciliacion',
-    referencia_remesa: msgId,
-  }))
-
-  await admin.from('cuotas').upsert(cuotasInsert, { onConflict: 'socio_id,anio,semestre' })
 
   return new NextResponse(xml, {
     headers: {

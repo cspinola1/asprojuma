@@ -16,8 +16,8 @@ export default function RemesasPage() {
   const [generando, setGenerando] = useState(false)
   const [error, setError] = useState('')
 
-  async function handleGenerar() {
-    if (!confirm(`¿Generar remesa SEPA para ${anio} semestre ${semestre}?\n\nEsto creará los registros de cuota pendientes y descargará el XML.`)) return
+  async function handleGenerar(formato: 'xml' | 'csv') {
+    if (!confirm(`¿Generar remesa SEPA ${formato.toUpperCase()} para ${anio} semestre ${semestre}?\n\nEsto creará los registros de cuota pendientes.`)) return
     setGenerando(true)
     setError('')
 
@@ -25,7 +25,7 @@ export default function RemesasPage() {
       const res = await fetch('/api/admin/remesas/generar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ anio, semestre, fechaCobro, importe }),
+        body: JSON.stringify({ anio, semestre, fechaCobro, importe, formato }),
       })
 
       if (!res.ok) {
@@ -34,12 +34,11 @@ export default function RemesasPage() {
         return
       }
 
-      // Descargar el XML
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `remesa-${anio}-S${semestre}.xml`
+      a.download = `remesa-${anio}-S${semestre}.${formato}`
       a.click()
       URL.revokeObjectURL(url)
     } catch {
@@ -130,13 +129,22 @@ export default function RemesasPage() {
             </p>
           )}
 
-          <button
-            onClick={handleGenerar}
-            disabled={generando}
-            className="w-full bg-blue-700 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition disabled:opacity-50"
-          >
-            {generando ? 'Generando XML…' : 'Generar y descargar XML pain.008'}
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => handleGenerar('xml')}
+              disabled={generando}
+              className="flex-1 bg-blue-700 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition disabled:opacity-50"
+            >
+              {generando ? 'Generando…' : 'Descargar XML pain.008'}
+            </button>
+            <button
+              onClick={() => handleGenerar('csv')}
+              disabled={generando}
+              className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition disabled:opacity-50"
+            >
+              Descargar CSV
+            </button>
+          </div>
         </div>
       </div>
 
