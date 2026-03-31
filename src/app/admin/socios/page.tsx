@@ -106,7 +106,20 @@ export default async function SociosAdminPage({ searchParams }: Props) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Socios</h1>
-        <span className="text-sm text-gray-500">{socios?.length ?? 0} registros</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-500">{socios?.length ?? 0} registros</span>
+          <a
+            href={`/api/admin/socios/exportar?${new URLSearchParams(
+              Object.fromEntries(
+                Object.entries({ q: searchParams.q, tipo: searchParams.tipo, estado: searchParams.estado })
+                  .filter(([, v]) => v != null) as [string, string][]
+              )
+            ).toString()}`}
+            className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-200 transition"
+          >
+            ↓ Exportar CSV
+          </a>
+        </div>
       </div>
 
       {/* Filtros */}
