@@ -114,7 +114,10 @@ export async function enviarSolicitudProfesor(
   if (emailDestino) {
     try {
       await enviarEmailRecepcionSolicitud(emailDestino, data.nombre.trim(), data.apellidos.trim())
-    } catch { /* No bloquear si falla el email */ }
+    } catch (e) {
+      // La solicitud se guardó correctamente pero el email falló
+      console.error('Error enviando email de confirmación:', e instanceof Error ? e.message : e)
+    }
   }
 
   return { ok: true }
