@@ -11,7 +11,7 @@ export const PERMISOS: Record<string, Rol[]> = {
   solicitudes:  ['tesorero', 'secretario', 'presidente', 'admin'],
   cuotas:       ['tesorero', 'presidente', 'admin'],
   remesas:      ['tesorero', 'presidente', 'admin'],
-  carnets:      ['tesorero', 'presidente', 'admin'],
+  carnets:      ['tesorero', 'secretario', 'presidente', 'admin'],
   editar_socio: ['secretario', 'presidente', 'admin'],
   actividades:  ['junta', 'presidente', 'admin'],
   roles:        ['admin'],

@@ -5,6 +5,38 @@ Cada entrada incluye fecha, hora y descripción detallada de lo hecho.
 
 ---
 
+## Sesión · 2026-04-02b — Calendario visual y pulido UX
+
+### Implementado
+
+- **Calendario visual tipo Google Calendar** (`src/components/CalendarioActividades.tsx`):
+  - Grid mensual con semana empezando en lunes (offset `(getDay() + 6) % 7`)
+  - Navegación mes a mes + botón "Hoy"
+  - Pills de actividades: verde=gratuita, naranja=pago, azul=inscrito
+  - Admin: clic en día vacío → nueva actividad con fecha pre-rellenada
+  - Socio: popover con info resumida + "Ver detalle"
+  - Leyenda en pie del calendario
+  - Toggle lista / calendario en la vista admin
+
+- **Botones calendario en popover eliminados**: "Google Cal" e ".ics" quitados del popover flotante del calendario. Ahora solo aparecen dentro de la página de detalle de actividad (`AddToCalendar.tsx`). También eliminadas funciones helper `googleCalendarUrl()` y `descargarICS()` del componente calendario para evitar errores ESLint.
+
+### Decisiones técnicas
+
+- Las funciones de exportación al calendario (Google Cal / .ics) se centralizan en el componente `AddToCalendar.tsx` de la página de detalle, no en el calendario. El popover es solo informativo + navegación.
+
+### Pendiente para próxima sesión
+
+- ⚠️ **SQL pendiente** (ejecutar en Supabase SQL Editor si no se ha hecho):
+  - `CREATE TABLE admin_roles`
+  - `CREATE TABLE actividades`
+  - `CREATE TABLE actividades_inscripciones`
+- ⚠️ **Variables Vercel** pendientes: `ASPROJUMA_IAS`, `ASPROJUMA_IBAN`, `ASPROJUMA_BIC`, `NEXT_PUBLIC_APP_URL=https://asprojuma.es`
+- ⚠️ **Dominio asprojuma.es** — verificar que está verde en Vercel
+- ⚠️ **Emails** — probar que confirmación de solicitud llega correctamente
+- 📋 Próxima funcionalidad: **Comunicaciones** (envío de emails a grupos de socios)
+
+---
+
 ## Sesión · 2026-04-02 — Roles, Actividades y Dominio
 
 ### Implementado

@@ -28,60 +28,6 @@ function toKey(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-function googleCalendarUrl(a: ActividadCal): string {
-  const fmt = (fecha: string, hora?: string | null) => {
-    const d = fecha.replace(/-/g, '')
-    if (hora) return `${d}T${hora.replace(/:/g, '').slice(0, 6)}00`
-    return d
-  }
-  const inicio = fmt(a.fecha_inicio, a.hora_inicio)
-  const fin = a.fecha_fin
-    ? fmt(a.fecha_fin, a.hora_fin)
-    : a.hora_inicio
-    ? fmt(a.fecha_inicio, a.hora_fin ?? a.hora_inicio)
-    : fmt(a.fecha_inicio)
-  const params = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: a.titulo,
-    dates: `${inicio}/${fin}`,
-    details: a.descripcion ?? '',
-    location: a.lugar ?? '',
-  })
-  return `https://calendar.google.com/calendar/render?${params}`
-}
-
-function descargarICS(a: ActividadCal) {
-  const fmt = (fecha: string, hora?: string | null) => {
-    const d = fecha.replace(/-/g, '')
-    if (hora) return `${d}T${hora.replace(/:/g, '').slice(0, 6)}00`
-    return d
-  }
-  const dtstart = fmt(a.fecha_inicio, a.hora_inicio)
-  const dtend = a.fecha_fin ? fmt(a.fecha_fin, a.hora_fin) : fmt(a.fecha_inicio, a.hora_inicio)
-  const ics = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//ASPROJUMA//ES',
-    'CALSCALE:GREGORIAN',
-    'BEGIN:VEVENT',
-    `DTSTART:${dtstart}`,
-    `DTEND:${dtend}`,
-    `SUMMARY:${a.titulo}`,
-    a.descripcion ? `DESCRIPTION:${a.descripcion.replace(/\n/g, '\\n')}` : null,
-    a.lugar ? `LOCATION:${a.lugar}` : null,
-    `UID:asprojuma-${a.id}-${Date.now()}@asprojuma.es`,
-    'END:VEVENT',
-    'END:VCALENDAR',
-  ].filter(Boolean).join('\r\n')
-
-  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const el = document.createElement('a')
-  el.href = url
-  el.download = `${a.titulo.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.ics`
-  el.click()
-  URL.revokeObjectURL(url)
-}
 
 export function CalendarioActividades({ actividades, modo, inscritasIds = [] }: Props) {
   const hoy = new Date()
@@ -284,26 +230,6 @@ export function CalendarioActividades({ actividades, modo, inscritasIds = [] }: 
                     >
                       {modo === 'admin' ? 'Editar' : 'Ver detalle'}
                     </Link>
-                    {modo === 'socio' && (
-                      <>
-                        <a
-                          href={googleCalendarUrl(a)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs border border-gray-200 text-gray-700 py-1.5 px-2 rounded-lg hover:bg-gray-50 transition"
-                          title="Añadir a Google Calendar"
-                        >
-                          Google Cal
-                        </a>
-                        <button
-                          onClick={() => descargarICS(a)}
-                          className="text-xs border border-gray-200 text-gray-700 py-1.5 px-2 rounded-lg hover:bg-gray-50 transition"
-                          title="Descargar .ics (Apple, Outlook...)"
-                        >
-                          .ics
-                        </button>
-                      </>
-                    )}
                   </div>
                 </div>
               ))}

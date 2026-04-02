@@ -109,7 +109,8 @@ Matriz de permisos:
 | Dashboard | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Socios (ver) | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Solicitudes | ✓ | ✓ | | ✓ | ✓ |
-| Cuotas/Remesas/Carnets | ✓ | | | ✓ | ✓ |
+| Cuotas/Remesas | ✓ | | | ✓ | ✓ |
+| Carnets | ✓ | ✓ | | ✓ | ✓ |
 | Editar/eliminar socio | | ✓ | | ✓ | ✓ |
 | Actividades (gestión) | | | ✓ | ✓ | ✓ |
 | Roles | | | | | ✓ |
@@ -125,7 +126,7 @@ Matriz de permisos:
 - [x] Socio: listado de próximas actividades agrupado por mes
 - [x] Socio: ficha detalle con inscripción / cancelación online
 - [x] Actividades de pago: instrucciones de transferencia bancaria pendiente
-- [ ] Vista de calendario mensual (actualmente es lista cronológica)
+- [x] Vista de calendario mensual estilo Google Calendar (2026-04-02)
 - [ ] Email de confirmación al inscribirse
 - [ ] Recordatorio automático 48h antes
 - [ ] Lista de espera cuando se completa el aforo
