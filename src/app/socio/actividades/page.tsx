@@ -2,10 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 
-function formatFecha(fecha: string) {
-  return new Date(fecha + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
-}
-
 export default async function ActividadesSocioPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
