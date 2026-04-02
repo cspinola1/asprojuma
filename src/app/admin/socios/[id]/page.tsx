@@ -5,6 +5,7 @@ import { Socio, SocioProfesor, EstadoSocio } from '@/lib/types'
 import { InvitarSocio } from './InvitarSocio'
 import { EnviarCarnet } from './EnviarCarnet'
 import { EliminarSocio } from './EliminarSocio'
+import { tienePermiso } from '@/lib/roles'
 
 const BADGE: Record<EstadoSocio, string> = {
   activo: 'bg-green-100 text-green-800',
@@ -48,6 +49,9 @@ function Seccion({ titulo, children }: { titulo: string; children: React.ReactNo
 
 export default async function SocioDetallePage({ params }: { params: { id: string } }) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const puedeEditar = await tienePermiso(user, 'editar_socio')
+
   const { data: socio } = await supabase
     .from('socios')
     .select('*, socios_profesores(centro, departamento, area_conocimiento, fecha_jubilacion, categoria)')
@@ -70,12 +74,14 @@ export default async function SocioDetallePage({ params }: { params: { id: strin
           <Link href="/admin/socios" className="text-sm text-blue-600 hover:text-blue-800 mb-2 inline-block">
             ← Volver al listado
           </Link>
-          <Link
-            href={`/admin/socios/${s.id}/editar`}
-            className="ml-4 text-sm text-blue-600 hover:text-blue-800 mb-2 inline-block"
-          >
-            ✏ Editar
-          </Link>
+          {puedeEditar && (
+            <Link
+              href={`/admin/socios/${s.id}/editar`}
+              className="ml-4 text-sm text-blue-600 hover:text-blue-800 mb-2 inline-block"
+            >
+              ✏ Editar
+            </Link>
+          )}
           <h1 className="text-2xl font-bold text-gray-900">
             {s.apellidos}, {s.nombre}
           </h1>
@@ -165,7 +171,7 @@ export default async function SocioDetallePage({ params }: { params: { id: strin
             <span>Actualizado: {new Date(s.updated_at).toLocaleDateString('es-ES')}</span>
             {s.migrado_excel && <span className="text-orange-400">Migrado desde Excel</span>}
           </div>
-          <EliminarSocio socioId={s.id} nombre={`${s.apellidos}, ${s.nombre}`} />
+          {puedeEditar && <EliminarSocio socioId={s.id} nombre={`${s.apellidos}, ${s.nombre}`} />}
         </section>
       </div>
     </div>

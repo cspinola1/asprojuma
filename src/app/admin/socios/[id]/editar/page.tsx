@@ -1,10 +1,16 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { notFound } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Socio, SocioProfesor } from '@/lib/types'
 import EditarSocioForm from './EditarSocioForm'
+import { tienePermiso } from '@/lib/roles'
 
 export default async function EditarSocioPage({ params }: { params: { id: string } }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!await tienePermiso(user, 'editar_socio')) redirect(`/admin/socios/${params.id}`)
+
   const admin = createAdminClient()
 
   const { data: socio } = await admin

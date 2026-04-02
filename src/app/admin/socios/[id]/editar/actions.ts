@@ -1,6 +1,8 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
+import { tienePermiso } from '@/lib/roles'
 import { revalidatePath } from 'next/cache'
 
 export interface EditarSocioData {
@@ -54,6 +56,10 @@ export async function editarSocio(
   tipo: string,
   data: EditarSocioData
 ): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!await tienePermiso(user, 'editar_socio')) return { error: 'No autorizado' }
+
   const admin = createAdminClient()
 
   // Verificar email UMA duplicado (solo para profesores, ya que cooperantes pueden compartir email)
