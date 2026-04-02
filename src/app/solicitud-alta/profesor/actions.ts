@@ -72,7 +72,6 @@ export async function enviarSolicitudProfesor(
       apellidos: data.apellidos.trim(),
       dni: data.dni.toUpperCase().trim(),
       fecha_nacimiento: data.fecha_nacimiento || null,
-      email_principal: data.email_uma.trim() || data.email_otros.trim() || null,
       email_uma: data.email_uma.trim() || null,
       email_otros: data.email_otros.trim() || null,
       tel_movil: data.tel_movil.trim() || null,

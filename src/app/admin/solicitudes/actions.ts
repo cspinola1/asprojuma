@@ -11,7 +11,7 @@ export async function aprobarSolicitud(id: number): Promise<{ error?: string }> 
   // Obtener el socio pendiente
   const { data: socio } = await supabase
     .from('socios')
-    .select('tipo, email_principal')
+    .select('tipo, email_uma, email_otros')
     .eq('id', id)
     .single()
 
@@ -58,10 +58,11 @@ export async function aprobarSolicitud(id: number): Promise<{ error?: string }> 
   if (error) return { error: error.message }
 
   // Enviar email de bienvenida / acceso al portal
-  if (socio.email_principal) {
+  const emailInvite = socio.email_uma || socio.email_otros
+  if (emailInvite) {
     try {
       const admin = createAdminClient()
-      await admin.auth.admin.inviteUserByEmail(socio.email_principal, {
+      await admin.auth.admin.inviteUserByEmail(emailInvite, {
         redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm`,
       })
     } catch {
@@ -83,7 +84,7 @@ export async function rechazarSolicitud(
 
   const { data: socio } = await supabase
     .from('socios')
-    .select('notas, nombre, apellidos, email_principal')
+    .select('notas, nombre, apellidos, email_uma, email_otros')
     .eq('id', id)
     .single()
 
@@ -103,12 +104,13 @@ export async function rechazarSolicitud(
   if (error) return { error: error.message }
 
   // Enviar email de rechazo con observaciones
-  if (socio?.email_principal) {
+  const emailRechazo = socio?.email_uma || socio?.email_otros
+  if (emailRechazo) {
     try {
       await enviarEmailRechazoSolicitud(
-        socio.email_principal,
-        socio.nombre ?? '',
-        socio.apellidos ?? '',
+        emailRechazo,
+        socio?.nombre ?? '',
+        socio?.apellidos ?? '',
         motivo,
       )
     } catch { /* No bloquear si falla el email */ }
