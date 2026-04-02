@@ -72,6 +72,7 @@ export async function enviarSolicitudProfesor(
       apellidos: data.apellidos.trim(),
       dni: data.dni.toUpperCase().trim(),
       fecha_nacimiento: data.fecha_nacimiento || null,
+      email_principal: data.email_uma.trim() || data.email_otros.trim() || null,
       email_uma: data.email_uma.trim() || null,
       email_otros: data.email_otros.trim() || null,
       tel_movil: data.tel_movil.trim() || null,
@@ -109,13 +110,13 @@ export async function enviarSolicitudProfesor(
     return { error: errorProf.message }
   }
 
-  // Enviar email de confirmación de recepción
-  const emailDestino = data.email_uma.trim() || data.email_otros.trim()
-  if (emailDestino) {
+  // Enviar email de confirmación de recepción (a todos los emails proporcionados)
+  const emailsDestino = [data.email_uma.trim(), data.email_otros.trim()].filter(Boolean)
+  console.log('Enviando confirmación a:', emailsDestino)
+  for (const emailDestino of emailsDestino) {
     try {
       await enviarEmailRecepcionSolicitud(emailDestino, data.nombre.trim(), data.apellidos.trim())
     } catch (e) {
-      // La solicitud se guardó correctamente pero el email falló
       console.error('Error enviando email de confirmación:', e instanceof Error ? e.message : e)
     }
   }
