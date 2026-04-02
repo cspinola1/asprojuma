@@ -20,7 +20,7 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
   return NextResponse.json(data)
 }
 
-export async function PATCH(request: NextRequest, _ctx: { params: { id: string } }) {
+export async function PATCH(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user || !await tienePermiso(user, 'actividades')) {
