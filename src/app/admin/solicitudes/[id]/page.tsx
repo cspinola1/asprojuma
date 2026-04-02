@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { BotonesAccion } from './SolicitudAcciones'
@@ -22,7 +22,7 @@ function Seccion({ titulo, children }: { titulo: string; children: React.ReactNo
 }
 
 export default async function SolicitudDetallePage({ params }: { params: { id: string } }) {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: socio } = await supabase
     .from('socios')
