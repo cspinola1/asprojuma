@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { InscripcionBoton } from './InscripcionBoton'
+import { AddToCalendar } from './AddToCalendar'
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
 
@@ -125,6 +126,17 @@ export default async function ActividadDetallePage({ params }: { params: { id: s
               </p>
             </div>
           )}
+
+          {/* Añadir al calendario */}
+          <AddToCalendar
+            titulo={actividad.titulo}
+            descripcion={actividad.descripcion}
+            lugar={actividad.lugar}
+            fecha_inicio={actividad.fecha_inicio}
+            hora_inicio={actividad.hora_inicio}
+            fecha_fin={actividad.fecha_fin}
+            hora_fin={actividad.hora_fin}
+          />
 
           {/* Botón inscripción */}
           {esSocioActivo ? (
