@@ -1,12 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { isAdmin } from '@/lib/admin'
+import { tienePermiso } from '@/lib/roles'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user || !isAdmin(user)) {
+  if (!user || !await tienePermiso(user, 'editar_socio')) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
 

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { isAdmin } from '@/lib/admin'
+import { tienePermiso } from '@/lib/roles'
 import { NextRequest, NextResponse } from 'next/server'
 import { generarPain008, DeudorSEPA } from '@/lib/sepa'
 
@@ -18,7 +18,7 @@ function csvRow(cols: (string | number | null | undefined)[]): string {
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user || !isAdmin(user)) {
+  if (!user || !await tienePermiso(user, 'remesas')) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
 

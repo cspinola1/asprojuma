@@ -33,28 +33,13 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith(p)
   )
 
-  // Rutas solo para administradores
-  const adminPaths = ['/admin']
-  const isAdminRoute = adminPaths.some(p =>
-    request.nextUrl.pathname.startsWith(p)
-  )
-
   if (isProtected && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('redirectTo', request.nextUrl.pathname)
     return NextResponse.redirect(url)
   }
-
-  if (isAdminRoute && user) {
-    const adminEmails = (process.env.ADMIN_EMAILS ?? '')
-      .split(',')
-      .map(e => e.trim().toLowerCase())
-      .filter(Boolean)
-    if (!adminEmails.includes((user.email ?? '').toLowerCase())) {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
-  }
+  // El acceso admin se controla en el layout y en cada ruta API
 
   return supabaseResponse
 }

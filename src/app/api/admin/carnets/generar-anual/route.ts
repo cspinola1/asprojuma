@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { isAdmin } from '@/lib/admin'
+import { tienePermiso } from '@/lib/roles'
 import { NextResponse } from 'next/server'
 import { generarCarnetPDF } from '@/lib/carnet-pdf'
 
@@ -9,7 +9,7 @@ export const maxDuration = 300
 export async function POST() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user || !isAdmin(user)) {
+  if (!user || !await tienePermiso(user, 'carnets')) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
 

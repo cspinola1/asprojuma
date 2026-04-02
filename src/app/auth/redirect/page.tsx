@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { isAdmin } from '@/lib/admin'
+import { esAdminUser } from '@/lib/roles'
 import { redirect } from 'next/navigation'
 
 // Página de redirección post-login: comprueba si el usuario es admin y redirige al área correcta.
@@ -8,6 +8,6 @@ export default async function AuthRedirectPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
-  if (isAdmin(user)) redirect('/admin')
+  if (await esAdminUser(user)) redirect('/admin')
   redirect('/socio')
 }
