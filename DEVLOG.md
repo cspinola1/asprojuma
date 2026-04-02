@@ -5,6 +5,60 @@ Cada entrada incluye fecha, hora y descripción detallada de lo hecho.
 
 ---
 
+## Sesión · 2026-04-02 — Roles, Actividades y Dominio
+
+### Implementado
+
+- **Sistema de roles** (`lib/roles.ts`): tesorero, secretario, junta, presidente, admin
+  - `getRol(email)` consulta primero ADMIN_EMAILS env var, luego tabla `admin_roles` en Supabase
+  - `tienePermiso(user, permiso)` usado en todos los API routes de admin
+  - Admin layout actualizado con nav condicional según rol y badge del rol activo
+  - Página `/admin/roles`: asignar/eliminar roles con tabla visual de permisos
+  - Middleware simplificado: ya no bloquea /admin (el layout lo gestiona)
+
+- **Módulo de actividades** completo:
+  - Admin: CRUD de actividades (`/admin/actividades`, `/admin/actividades/nueva`, `/admin/actividades/[id]`)
+  - Admin: gestión de inscripciones por actividad con marcar pagado/cancelar
+  - Socio: listado de próximas actividades agrupado por mes (`/socio/actividades`)
+  - Socio: ficha detalle con botón inscribirse/cancelar (`/socio/actividades/[id]`)
+  - Aviso de transferencia bancaria para actividades de pago pendiente
+
+- **Dominio asprojuma.es**: DNS configurado en IONOS (A record 216.198.79.1, CNAME www → Vercel, SPF actualizado con amazonses.com)
+
+- **Fix emails**: `email_principal` es columna restringida en Supabase (no insertable directamente). Las acciones de admin ahora usan `email_uma || email_otros`. La confirmación de solicitud de profesor se envía a ambos emails.
+
+- **Skill `update-session`** creado en `~/.claude/skills/update-session/SKILL.md`
+
+### Decisiones técnicas
+
+- `email_principal` en la tabla socios es una columna con restricción DEFAULT (probablemente generada por trigger de Supabase Auth al invitar al usuario). No se puede insertar directamente — hay que leerla desde auth o usar `email_uma || email_otros`.
+- El middleware ya no verifica el rol admin (solo autenticación). La verificación de acceso al panel admin la hace el server component del layout, evitando llamadas a BD en Edge runtime.
+- Los roles de la BD se cachean por request (una sola query por layout render). No hay caché entre requests.
+
+### Problemas encontrados
+
+- 5 errores de build ESLint por parámetros `_request`/`_ctx` con prefijo `_` que ESLint igualmente marca como "unused". Solución: eliminar el parámetro completamente cuando no se usa, o usar la firma sin parámetro (`GET()` sin args).
+- `email_principal`: intento de insert fallaba con "cannot insert a non-DEFAULT value". Revertido y se usa `email_uma || email_otros` en su lugar.
+
+### Pendiente para próxima sesión
+
+- ⚠️ **SQL pendiente** (ejecutar en Supabase SQL Editor si no se ha hecho):
+  ```sql
+  CREATE TABLE admin_roles (...);  -- sistema de roles
+  CREATE TABLE actividades (...);  -- módulo actividades
+  CREATE TABLE actividades_inscripciones (...);  -- inscripciones
+  ```
+- ⚠️ **Variables Vercel** pendientes de configurar:
+  - `ASPROJUMA_IAS` — Identificador de Acreedor SEPA
+  - `ASPROJUMA_IBAN` — IBAN cuenta ASPROJUMA
+  - `ASPROJUMA_BIC` — BIC del banco
+  - `NEXT_PUBLIC_APP_URL=https://asprojuma.es` (cuando dominio esté verde en Vercel)
+- ⚠️ **Dominio asprojuma.es** — verificar que Vercel lo marca en verde (puede tardar hasta 24h)
+- ⚠️ **Emails** — probar solicitud de alta con la corrección de email_principal para confirmar que llegan
+- 📋 Próxima funcionalidad acordada: **Comunicaciones** (envío de emails masivos a grupos de socios)
+
+---
+
 ## Sesión 1 · 2026-03-23
 
 ### 21:22 — Migración de datos Excel → SQL

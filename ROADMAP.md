@@ -33,124 +33,112 @@
 - [x] Página de recuperación de contraseña (`/recuperar-contrasena`)
 - [x] Página de nueva contraseña (`/nueva-contrasena`)
 - [x] Flujo de primer acceso por invitación (`/api/admin/invitar`)
-- [x] Route de callback de autenticación (`/auth/callback`)
+- [x] Flujo /auth/confirm con soporte PKCE, token_hash y error params (expirados)
+- [x] Redirección automática admin/socio tras login según rol
 
 ### Formulario de alta online
 - [x] Formulario de solicitud de Socio Profesor (`/solicitud-alta/profesor`)
-  - [x] Datos personales (nombre, DNI, fecha nacimiento, fecha jubilación)
-  - [x] Datos académicos (centro, área de conocimiento)
-  - [x] IBAN para domiciliación
-  - [x] Validación de campos obligatorios
 - [x] Formulario de solicitud de Miembro Cooperante (`/solicitud-alta/cooperante`)
-  - [x] Datos personales
-  - [x] Relación con UMA (opcional), estudios y aficiones
-  - [x] Emails de dos profesores avalistas (validados contra socios activos)
-- [x] Prevención de duplicados por DNI
+- [x] Prevención de duplicados por DNI y email UMA
+- [x] Email de confirmación de recepción al solicitante (vía Resend)
+- [x] Email de rechazo con observaciones
 
 ### Área privada del socio
 - [x] Dashboard del socio (`/socio`)
-- [x] Página "Mi perfil" — ver y editar datos de contacto e IBAN (`/socio/perfil`)
-- [x] Página "Mi carnet" — visualización del carnet digital (`/socio/carnet`)
-- [x] Página "Mis cuotas" — historial y estado del año actual (`/socio/cuotas`)
+- [x] Página "Mi perfil" — ver y editar datos de contacto e IBAN
+- [x] Página "Mi carnet" — visualización del carnet digital
+- [x] Página "Mis cuotas" — historial y estado del año actual
+- [x] Página "Actividades" — ver y apuntarse a actividades
 
 ### Panel de administración
 - [x] Dashboard admin con estadísticas (`/admin`)
-  - [x] Total socios activos profesores / cooperantes / bajas / fallecidos / pendientes
-- [x] Listado de socios con búsqueda, filtros y ordenación (`/admin/socios`)
-- [x] Ficha completa de un socio (`/admin/socios/[id]`)
-- [x] Botón de invitación para enviar acceso al socio
-- [x] Listado y gestión de cuotas (`/admin/cuotas`)
-  - [x] Estadísticas por año/semestre
-  - [x] Cambiar estado (cobrado, devuelto, exento, pendiente)
-  - [x] Crear y eliminar cuotas
-- [x] Listado y gestión de solicitudes de alta (`/admin/solicitudes`)
-  - [x] Aprobar solicitud → asignar número de socio y activar
-  - [x] Rechazar solicitud → guardar motivo
+- [x] Listado de socios con búsqueda, filtros y exportación CSV
+- [x] Ficha completa de un socio con edición y dar de baja
+- [x] Botón de invitación y envío de carnet individual
+- [x] Listado y gestión de cuotas
+- [x] Listado y gestión de solicitudes de alta (aprobar/rechazar)
 
 ### GitHub + Vercel
-- [x] Crear repositorio GitHub (`cspinola1/asprojuma`) y hacer primer push
-- [x] Conectar repositorio con Vercel
-- [x] Verificar despliegue automático en Vercel
-- [x] Configurar variables de entorno en Vercel
-- [x] Configurar Supabase Auth URL Configuration para producción
-- [x] Plataforma en producción: `https://asprojuma.vercel.app`
+- [x] Repositorio GitHub (`cspinola1/asprojuma`) + despliegue automático Vercel
+- [x] Variables de entorno configuradas en Vercel
+- [x] Dominio asprojuma.es configurado en Vercel + DNS en IONOS
+- [x] Email Resend desde noreply@asprojuma.es (dominio verificado)
 
 ---
 
-## FASE 2 — Carnets digitales
-**En curso**
+## FASE 2 — Carnets digitales ✅ COMPLETADA
+**Completada:** 2026-04-02
 
 - [x] Diseño del carnet digital (fondo azul degradado, logo UMA, datos del socio)
-- [x] Generación de PDF con `@react-pdf/renderer` — tamaño tarjeta CR80
-- [x] Añadir código QR con URL de verificación
+- [x] Generación PDF con `@react-pdf/renderer` — tamaño tarjeta CR80
+- [x] Código QR con URL de verificación pública
 - [x] Página pública de verificación de carnet por QR (`/verificar/[id]`)
-  - [x] Muestra nombre, tipo, número y fecha de ingreso
-  - [x] Sin login requerido
 - [x] Botón "Descargar PDF" en área privada del socio
-- [ ] Subir PDF generado a Supabase Storage y guardar URL en tabla `carnets`
-- [ ] Enviar carnet por email al socio
-- [ ] Historial de carnets anteriores con descarga individual
-- [ ] Proceso de renovación anual
-  - [ ] Envío automático de aviso el 1 de diciembre
-  - [ ] El socio confirma sus datos desde área privada
-  - [ ] Admin valida cobro y activa renovación
-  - [ ] Generación y envío automático del nuevo carnet
+- [x] Envío de carnet por email al socio desde admin
+- [x] Generación masiva anual de carnets (Admin → Carnets)
 
 ---
 
-## FASE 3 — Portal del socio completo
-**Pendiente**
+## FASE 3 — Cuotas, Remesas y Comunicaciones ✅ COMPLETADA (parcial)
+**Completada:** 2026-04-02
 
-### Área privada del socio
-- [ ] Ver recibos individuales en PDF
-- [ ] Cambiar contraseña
-- [ ] (Solo profesores) Ver avales realizados a cooperantes
+### Remesas SEPA
+- [x] Generación de remesa SEPA pain.008 XML (FRST/RCUR agrupados)
+- [x] Exportación CSV de remesa
+- [x] Panel de gestión de remesa: marcar cobradas / devueltas con motivo
+- [x] Motivos de devolución bancaria (MD01, MD06, AC06, AC04, AM04)
+- [x] Dar de baja a socio desde devolución no resuelta
 
-### Panel de administración — cuotas y remesas
-- [ ] Generación de remesas SEPA XML (ISO 20022 pain.008)
-  - [ ] Seleccionar ejercicio y semestre
-  - [ ] Filtrar socios activos con IBAN válido y cuota pendiente
-  - [ ] Previsualizar remesa (importe total, número de recibos)
-  - [ ] Descargar fichero XML listo para banca electrónica
-  - [ ] Marcar automáticamente recibos como "en cobro"
-  - [ ] Confirmar cobro → actualizar estado
-
-### Comunicaciones
-- [ ] Enviar email a grupos de socios (por tipo, estado, actividad)
+### Comunicaciones (pendiente)
+- [ ] Enviar email a grupos de socios (por tipo, estado, etc.)
 - [ ] Plantillas de email configurables desde panel admin
 
-### Informes y exportaciones
-- [ ] Exportar listado de socios a CSV/Excel
-- [ ] Exportar historial de pagos a CSV/Excel
-- [ ] Estadísticas generales de la asociación
+---
+
+## FASE 4 — Roles y Permisos ✅ COMPLETADA
+**Completada:** 2026-04-02
+
+- [x] Sistema de roles: tesorero, secretario, junta, presidente, admin
+- [x] Panel `/admin/roles` para asignar y eliminar roles
+- [x] Nav admin condicional según rol del usuario
+- [x] Todos los API routes protegidos con permisos por rol
+
+Matriz de permisos:
+| Sección | Tesorero | Secretario | Junta | Presidente | Admin |
+|---------|----------|------------|-------|------------|-------|
+| Dashboard | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Socios (ver) | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Solicitudes | ✓ | ✓ | | ✓ | ✓ |
+| Cuotas/Remesas/Carnets | ✓ | | | ✓ | ✓ |
+| Editar/eliminar socio | | ✓ | | ✓ | ✓ |
+| Actividades (gestión) | | | ✓ | ✓ | ✓ |
+| Roles | | | | | ✓ |
 
 ---
 
-## FASE 4 — Actividades
-**Pendiente**
+## FASE 5 — Actividades ✅ COMPLETADA
+**Completada:** 2026-04-02
 
-- [ ] Calendario de actividades — vista mensual y lista
-- [ ] Crear / editar / publicar actividades (admin)
-- [ ] Inscripción online desde área privada
+- [x] Tablas `actividades` y `actividades_inscripciones` en Supabase
+- [x] Admin: listar, crear, editar y eliminar actividades
+- [x] Admin: gestión de inscripciones por actividad (marcar pagado / cancelar)
+- [x] Socio: listado de próximas actividades agrupado por mes
+- [x] Socio: ficha detalle con inscripción / cancelación online
+- [x] Actividades de pago: instrucciones de transferencia bancaria pendiente
+- [ ] Vista de calendario mensual (actualmente es lista cronológica)
+- [ ] Email de confirmación al inscribirse
+- [ ] Recordatorio automático 48h antes
 - [ ] Lista de espera cuando se completa el aforo
-- [ ] Recordatorio automático por email 48h antes
-- [ ] Gestión de inscritos desde panel admin
-- [ ] Informes de asistencia por actividad
+- [ ] Exportar lista de inscritos a CSV
 
 ---
 
-## Pendientes transversales (cualquier fase)
+## Pendientes transversales
 
-- [ ] RGPD
-  - [ ] Política de privacidad
-  - [ ] Registro de consentimientos (fecha + versión)
-  - [ ] Derecho de acceso — exportar datos propios
-  - [ ] Derecho al olvido — proceso de baja y anonimización
-- [ ] Seguridad
-  - [ ] Rate limiting en login y formularios públicos
-  - [ ] Auditoría de cambios en datos sensibles
-  - [ ] Cifrado de IBANs en base de datos
-- [ ] Accesibilidad (WCAG AA mínimo)
-- [ ] Versión móvil responsive verificada
-- [ ] Dominio propio de la asociación (asprojuma.es o similar)
-- [ ] Configurar plantillas de email en Supabase Auth (invitación y recuperación)
+- [ ] **Configurar variables de entorno bancarias** en Vercel: `ASPROJUMA_IAS`, `ASPROJUMA_IBAN`, `ASPROJUMA_BIC`
+- [ ] **Actualizar** `NEXT_PUBLIC_APP_URL=https://asprojuma.es` en Vercel cuando el dominio esté verde
+- [ ] RGPD: política de privacidad, registro de consentimientos, derecho al olvido
+- [ ] Seguridad: rate limiting en formularios públicos, auditoría de cambios
+- [ ] Notificación al admin cuando llega nueva solicitud de alta
+- [ ] Portal público con información de actividades (sin login)
+- [ ] Historial de cambios por socio (audit log)
