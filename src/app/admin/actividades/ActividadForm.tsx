@@ -12,6 +12,7 @@ interface ActividadFormData {
   hora_fin: string
   lugar: string
   precio: string
+  precio_invitado: string
   plazas: string
   estado: 'borrador' | 'publicada' | 'cancelada'
 }
@@ -32,6 +33,7 @@ export function ActividadForm({ inicial, modo }: Props) {
     hora_fin: inicial?.hora_fin ?? '',
     lugar: inicial?.lugar ?? '',
     precio: inicial?.precio ?? '0',
+    precio_invitado: inicial?.precio_invitado ?? '',
     plazas: inicial?.plazas ?? '',
     estado: inicial?.estado ?? 'publicada',
   })
@@ -53,7 +55,7 @@ export function ActividadForm({ inicial, modo }: Props) {
     const res = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, precio: Number(form.precio), plazas: form.plazas ? Number(form.plazas) : null }),
+      body: JSON.stringify({ ...form, precio: Number(form.precio), precio_invitado: form.precio_invitado !== '' ? Number(form.precio_invitado) : null, plazas: form.plazas ? Number(form.plazas) : null }),
     })
     const data = await res.json()
     if (data.error) { setError(data.error); setGuardando(false); return }
@@ -126,17 +128,23 @@ export function ActividadForm({ inicial, modo }: Props) {
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4">
         <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Inscripción</h2>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-xs text-gray-500 uppercase tracking-wide mb-1">Precio (€)</label>
+            <label className="block text-xs text-gray-500 uppercase tracking-wide mb-1">Precio socio (€)</label>
             <input type="number" min="0" step="0.01" value={form.precio} onChange={e => set('precio', e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
             <p className="text-xs text-gray-400 mt-1">0 = gratuita</p>
           </div>
           <div>
+            <label className="block text-xs text-gray-500 uppercase tracking-wide mb-1">Precio invitado (€)</label>
+            <input type="number" min="0" step="0.01" value={form.precio_invitado} onChange={e => set('precio_invitado', e.target.value)}
+              placeholder="Igual que socio"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
             <label className="block text-xs text-gray-500 uppercase tracking-wide mb-1">Plazas</label>
             <input type="number" min="1" value={form.plazas} onChange={e => set('plazas', e.target.value)}
-              placeholder="Sin límite"
+              placeholder="Hasta completar aforo"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>

@@ -175,7 +175,7 @@ export default function EditarSocioForm({
         <button
           type="button"
           onClick={() => router.push(`/admin/socios/${socio.id}`)}
-          className="px-6 py-2.5 rounded-lg text-sm border border-gray-300 hover:bg-gray-50 transition"
+          className="px-6 py-2.5 rounded-lg text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
         >
           Cancelar
         </button>

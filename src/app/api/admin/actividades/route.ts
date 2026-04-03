@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
       hora_fin: body.hora_fin || null,
       lugar: body.lugar?.trim() || null,
       precio: Number(body.precio ?? 0),
+      precio_invitado: body.precio_invitado != null ? Number(body.precio_invitado) : null,
       plazas: body.plazas ? Number(body.plazas) : null,
       estado: body.estado ?? 'publicada',
     })
