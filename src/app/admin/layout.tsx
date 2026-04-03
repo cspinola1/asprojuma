@@ -44,6 +44,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               {ROL_LABEL[rol]}
             </span>
             <span>{user.email}</span>
+            <Link href="/socio" className="hover:text-white transition">Área socio</Link>
             <form action="/api/auth/logout" method="POST">
               <button className="hover:text-white transition">Cerrar sesión</button>
             </form>
