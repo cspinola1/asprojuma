@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
+import { esAdminUser } from '@/lib/roles'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 
 export default async function SocioPage() {
   const supabase = await createClient()
@@ -7,16 +9,25 @@ export default async function SocioPage() {
 
   if (!user) redirect('/login')
 
+  const esAdmin = await esAdminUser(user)
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-lg font-bold text-blue-900">ASPROJUMA · Área del socio</h1>
-          <form action="/api/auth/logout" method="POST">
-            <button className="text-sm text-gray-500 hover:text-red-600">
-              Cerrar sesión
-            </button>
-          </form>
+          <div className="flex items-center gap-4">
+            {esAdmin && (
+              <Link href="/admin" className="text-sm text-blue-600 hover:text-blue-800">
+                Panel admin
+              </Link>
+            )}
+            <form action="/api/auth/logout" method="POST">
+              <button className="text-sm text-gray-500 hover:text-red-600">
+                Cerrar sesión
+              </button>
+            </form>
+          </div>
         </div>
       </header>
 
