@@ -128,7 +128,7 @@ export function ActividadForm({ inicial, modo }: Props) {
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4">
         <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Inscripción</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div>
             <label className="block text-xs text-gray-500 uppercase tracking-wide mb-1">Precio socio (€)</label>
             <input type="number" min="0" step="0.01" value={form.precio} onChange={e => set('precio', e.target.value)}
