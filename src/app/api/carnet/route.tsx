@@ -8,9 +8,10 @@ import QRCode from 'qrcode'
 
 export const runtime = 'nodejs'
 
-// Tarjeta vertical CR80: 54mm × 85.6mm a 96dpi → ×3.78 para px
-const W = Math.round(54 * 3.78)   // 204px
-const H = Math.round(85.6 * 3.78) // 323px
+// Tarjeta CR80 a 300dpi: 54mm × 85.6mm → 638×1011px
+const S = 4  // escala sobre 96dpi base
+const W = Math.round(54 * 3.78 * S)   // ~816px
+const H = Math.round(85.6 * 3.78 * S) // ~1293px
 
 // Leer fuentes del filesystem (disponible en Vercel Node.js runtime)
 const fontRegular = readFileSync(join(process.cwd(), 'public/fonts/inter-regular.ttf'))
@@ -47,7 +48,7 @@ export async function GET() {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://asprojuma.vercel.app'
     const verifyUrl = `${appUrl}/verificar/${socio.id}`
-    const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 80, margin: 1 })
+    const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 80 * S, margin: 1 })
 
     const logoRes = await fetch(`${appUrl}/logo-uma.png`)
     const logoBuffer = await logoRes.arrayBuffer()
@@ -62,47 +63,47 @@ export async function GET() {
             backgroundColor: '#c8e6f5',
             display: 'flex',
             flexDirection: 'column',
-            padding: '12px 10px 10px',
+            padding: `${12*S}px ${10*S}px ${10*S}px`,
             fontFamily: 'Inter',
           }}
         >
           {/* Cabecera */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 8*S }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoBase64} width={48} height={48} alt="" style={{ marginBottom: 4 }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#111827', letterSpacing: 1 }}>ASPROJUMA</span>
-            <span style={{ fontSize: 5.5, color: '#374151', marginTop: 2, textAlign: 'center' }}>Asociación de Profesores Jubilados de la</span>
-            <span style={{ fontSize: 6, fontWeight: 700, color: '#111827', letterSpacing: 0.5 }}>UNIVERSIDAD DE MÁLAGA</span>
+            <img src={logoBase64} width={48*S} height={48*S} alt="" style={{ marginBottom: 4*S }} />
+            <span style={{ fontSize: 13*S, fontWeight: 700, color: '#111827', letterSpacing: S }}>ASPROJUMA</span>
+            <span style={{ fontSize: 5.5*S, color: '#374151', marginTop: 2*S, textAlign: 'center' }}>Asociación de Profesores Jubilados de la</span>
+            <span style={{ fontSize: 6*S, fontWeight: 700, color: '#111827', letterSpacing: 0.5*S }}>UNIVERSIDAD DE MÁLAGA</span>
           </div>
 
           {/* Divisor */}
-          <div style={{ borderTop: '0.5px solid #93c5d8', marginBottom: 8 }} />
+          <div style={{ borderTop: `${2}px solid #93c5d8`, marginBottom: 8*S }} />
 
           {/* Datos */}
-          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingLeft: 8, paddingRight: 8 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 6 }}>
-              <span style={{ fontSize: 5, fontWeight: 700, color: '#4b7a8f', textTransform: 'uppercase', letterSpacing: 0.5 }}>Nombre</span>
-              <span style={{ fontSize: 9, fontWeight: 700, color: '#111827', fontStyle: 'italic' }}>{socio.nombre}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingLeft: 8*S, paddingRight: 8*S }}>
+            <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 6*S }}>
+              <span style={{ fontSize: 5*S, fontWeight: 700, color: '#4b7a8f', textTransform: 'uppercase', letterSpacing: 0.5*S }}>Nombre</span>
+              <span style={{ fontSize: 9*S, fontWeight: 700, color: '#111827', fontStyle: 'italic' }}>{socio.nombre}</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 6 }}>
-              <span style={{ fontSize: 5, fontWeight: 700, color: '#4b7a8f', textTransform: 'uppercase', letterSpacing: 0.5 }}>Apellidos</span>
-              <span style={{ fontSize: 9, fontWeight: 700, color: '#111827', fontStyle: 'italic' }}>{socio.apellidos}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 6*S }}>
+              <span style={{ fontSize: 5*S, fontWeight: 700, color: '#4b7a8f', textTransform: 'uppercase', letterSpacing: 0.5*S }}>Apellidos</span>
+              <span style={{ fontSize: 9*S, fontWeight: 700, color: '#111827', fontStyle: 'italic' }}>{socio.apellidos}</span>
             </div>
-            <span style={{ fontSize: 7.5, fontWeight: 700, color: '#111827', marginTop: 4 }}>{tipoLabel}  Nº {num}</span>
-            <span style={{ fontSize: 7.5, fontWeight: 700, color: '#111827', marginTop: 4 }}>DNI:  {socio.dni ?? '—'}</span>
+            <span style={{ fontSize: 7.5*S, fontWeight: 700, color: '#111827', marginTop: 4*S }}>{tipoLabel}  Nº {num}</span>
+            <span style={{ fontSize: 7.5*S, fontWeight: 700, color: '#111827', marginTop: 4*S }}>DNI:  {socio.dni ?? '—'}</span>
           </div>
 
           {/* Pie */}
-          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', paddingLeft: 8, paddingRight: 8, paddingBottom: 4 }}>
+          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', paddingLeft: 8*S, paddingRight: 8*S, paddingBottom: 4*S }}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>Válido {anio}</span>
+              <span style={{ fontSize: 14*S, fontWeight: 700, color: '#111827' }}>Válido {anio}</span>
               <div style={{ display: 'flex', flexDirection: 'row' }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: '#00a99d' }}>uma</span>
-                <span style={{ fontSize: 10, fontWeight: 700, color: '#007a73' }}>.es</span>
+                <span style={{ fontSize: 10*S, fontWeight: 700, color: '#00a99d' }}>uma</span>
+                <span style={{ fontSize: 10*S, fontWeight: 700, color: '#007a73' }}>.es</span>
               </div>
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={qrDataUrl} width={42} height={42} alt="" />
+            <img src={qrDataUrl} width={42*S} height={42*S} alt="" />
           </div>
         </div>
       ),
