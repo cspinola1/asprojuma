@@ -13,8 +13,8 @@ const W = Math.round(54 * 3.78)   // 204px
 const H = Math.round(85.6 * 3.78) // 323px
 
 // Leer fuentes del filesystem (disponible en Vercel Node.js runtime)
-const fontRegular = readFileSync(join(process.cwd(), 'public/fonts/inter-regular.woff2'))
-const fontBold = readFileSync(join(process.cwd(), 'public/fonts/inter-bold.woff2'))
+const fontRegular = readFileSync(join(process.cwd(), 'public/fonts/inter-regular.ttf'))
+const fontBold = readFileSync(join(process.cwd(), 'public/fonts/inter-bold.ttf'))
 
 export async function GET() {
   try {
