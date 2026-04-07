@@ -1,95 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import React from 'react'
-import { renderToBuffer, Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer'
+import satori from 'satori'
+import sharp from 'sharp'
 import QRCode from 'qrcode'
 
-// Tarjeta vertical: 54mm ancho × 85.6mm alto (CR80 girada)
-const W = 54 * 2.835
-const H = 85.6 * 2.835
-
-const styles = StyleSheet.create({
-  page: {
-    width: W,
-    height: H,
-    backgroundColor: '#c8e6f5',
-    padding: 10,
-    flexDirection: 'column',
-    fontFamily: 'Helvetica',
-  },
-  header: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 6,
-  },
-  logo: { width: 44, height: 44 },
-  titleMain: {
-    fontSize: 11,
-    fontFamily: 'Helvetica-Bold',
-    color: '#111827',
-    letterSpacing: 1,
-    textAlign: 'center',
-  },
-  titleSub: {
-    fontSize: 4.5,
-    color: '#374151',
-    textAlign: 'center',
-    marginTop: 1,
-  },
-  titleUniv: {
-    fontSize: 5,
-    fontFamily: 'Helvetica-Bold',
-    color: '#111827',
-    letterSpacing: 0.5,
-    textAlign: 'center',
-  },
-  divider: {
-    borderTopWidth: 0.5,
-    borderTopColor: '#93c5d8',
-    marginHorizontal: 4,
-    marginBottom: 6,
-  },
-  dataSection: {
-    paddingHorizontal: 8,
-    gap: 5,
-    flex: 1,
-  },
-  dataGroup: { flexDirection: 'column', gap: 1 },
-  dataLabel: {
-    fontSize: 4,
-    fontFamily: 'Helvetica-Bold',
-    color: '#4b7a8f',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  dataValue: {
-    fontSize: 8,
-    fontFamily: 'Helvetica-BoldOblique',
-    color: '#111827',
-  },
-  tipoText: {
-    fontSize: 6.5,
-    fontFamily: 'Helvetica-Bold',
-    color: '#111827',
-    marginTop: 4,
-  },
-  footer: {
-    paddingHorizontal: 8,
-    paddingBottom: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-  },
-  validoText: {
-    fontSize: 12,
-    fontFamily: 'Helvetica-Bold',
-    color: '#111827',
-  },
-  umaBlock: { flexDirection: 'row' },
-  qrCode: { width: 38, height: 38 },
-})
+// Tarjeta vertical CR80: 54mm × 85.6mm a 96dpi → ×3.78 para px
+const W = Math.round(54 * 3.78)   // 204px
+const H = Math.round(85.6 * 3.78) // 323px
 
 export async function GET() {
   const supabase = await createClient()
@@ -121,67 +39,88 @@ export async function GET() {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://asprojuma.vercel.app'
   const verifyUrl = `${appUrl}/verificar/${socio.id}`
-  const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 76, margin: 1 })
+  const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 80, margin: 1 })
 
   const logoRes = await fetch(`${appUrl}/logo-uma.png`)
   const logoBuffer = await logoRes.arrayBuffer()
   const logoBase64 = `data:image/png;base64,${Buffer.from(logoBuffer).toString('base64')}`
 
-  const pdfDoc = (
-    <Document>
-      <Page size={[W, H]} style={styles.page}>
-        {/* Cabecera centrada */}
-        <View style={styles.header}>
-          {/* eslint-disable-next-line jsx-a11y/alt-text */}
-          <Image src={logoBase64} style={styles.logo} />
-          <Text style={styles.titleMain}>ASPROJUMA</Text>
-          <Text style={styles.titleSub}>Asociación de Profesores Jubilados de la</Text>
-          <Text style={styles.titleUniv}>UNIVERSIDAD DE MÁLAGA</Text>
-        </View>
+  // Fuente Helvetica embebida via Arial del sistema (fallback)
+  const fontRes = await fetch('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff')
+  const fontBuffer = await fontRes.arrayBuffer()
 
-        <View style={styles.divider} />
+  const svg = await satori(
+    <div
+      style={{
+        width: W,
+        height: H,
+        backgroundColor: '#c8e6f5',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '12px 10px 10px',
+        fontFamily: 'Inter',
+      }}
+    >
+      {/* Cabecera */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 8 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={logoBase64} width={48} height={48} alt="" style={{ marginBottom: 4 }} />
+        <span style={{ fontSize: 13, fontWeight: 700, color: '#111827', letterSpacing: 1 }}>ASPROJUMA</span>
+        <span style={{ fontSize: 5.5, color: '#374151', marginTop: 2, textAlign: 'center' }}>Asociación de Profesores Jubilados de la</span>
+        <span style={{ fontSize: 6, fontWeight: 700, color: '#111827', letterSpacing: 0.5 }}>UNIVERSIDAD DE MÁLAGA</span>
+      </div>
 
-        {/* Datos */}
-        <View style={styles.dataSection}>
-          <View style={styles.dataGroup}>
-            <Text style={styles.dataLabel}>Nombre</Text>
-            <Text style={styles.dataValue}>{socio.nombre}</Text>
-          </View>
-          <View style={styles.dataGroup}>
-            <Text style={styles.dataLabel}>Apellidos</Text>
-            <Text style={styles.dataValue}>{socio.apellidos}</Text>
-          </View>
-          <Text style={styles.tipoText}>{tipoLabel}  Nº {num}</Text>
-          <Text style={styles.tipoText}>DNI:  {socio.dni ?? '—'}</Text>
-        </View>
+      {/* Divisor */}
+      <div style={{ borderTop: '0.5px solid #93c5d8', marginBottom: 8 }} />
 
-        {/* Pie */}
-        <View style={styles.footer}>
-          <View>
-            <Text style={styles.validoText}>Válido {anio}</Text>
-            <View style={styles.umaBlock}>
-              <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: '#00a99d' }}>uma</Text>
-              <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: '#007a73' }}>.es</Text>
-            </View>
-          </View>
-          {/* eslint-disable-next-line jsx-a11y/alt-text */}
-          <Image src={qrDataUrl} style={styles.qrCode} />
-        </View>
-      </Page>
-    </Document>
+      {/* Datos */}
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingLeft: 8, paddingRight: 8, gap: 6 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <span style={{ fontSize: 5, fontWeight: 700, color: '#4b7a8f', textTransform: 'uppercase', letterSpacing: 0.5 }}>Nombre</span>
+          <span style={{ fontSize: 9, fontWeight: 700, color: '#111827', fontStyle: 'italic' }}>{socio.nombre}</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <span style={{ fontSize: 5, fontWeight: 700, color: '#4b7a8f', textTransform: 'uppercase', letterSpacing: 0.5 }}>Apellidos</span>
+          <span style={{ fontSize: 9, fontWeight: 700, color: '#111827', fontStyle: 'italic' }}>{socio.apellidos}</span>
+        </div>
+        <span style={{ fontSize: 7.5, fontWeight: 700, color: '#111827', marginTop: 4 }}>{tipoLabel}  Nº {num}</span>
+        <span style={{ fontSize: 7.5, fontWeight: 700, color: '#111827' }}>DNI:  {socio.dni ?? '—'}</span>
+      </div>
+
+      {/* Pie */}
+      <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', paddingLeft: 8, paddingRight: 8, paddingBottom: 4 }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>Válido {anio}</span>
+          <div style={{ display: 'flex', flexDirection: 'row' }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: '#00a99d' }}>uma</span>
+            <span style={{ fontSize: 10, fontWeight: 700, color: '#007a73' }}>.es</span>
+          </div>
+        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={qrDataUrl} width={42} height={42} alt="" />
+      </div>
+    </div>,
+    {
+      width: W,
+      height: H,
+      fonts: [
+        { name: 'Inter', data: fontBuffer, weight: 400, style: 'normal' },
+        { name: 'Inter', data: fontBuffer, weight: 700, style: 'normal' },
+      ],
+    }
   )
 
-  const buffer = await renderToBuffer(pdfDoc)
+  const jpgBuffer = await sharp(Buffer.from(svg))
+    .jpeg({ quality: 95 })
+    .toBuffer()
 
-  // Guardar en Supabase Storage y registrar en tabla carnets
+  // Guardar en Supabase Storage
   try {
-    const admin = createAdminClient()
-    const storagePath = `${socio.id}/${anio}.pdf`
-
+    const storagePath = `${socio.id}/${anio}.jpg`
     await admin.storage
       .from('carnets')
-      .upload(storagePath, new Uint8Array(buffer), {
-        contentType: 'application/pdf',
+      .upload(storagePath, new Uint8Array(jpgBuffer), {
+        contentType: 'image/jpeg',
         upsert: true,
       })
 
@@ -202,10 +141,10 @@ export async function GET() {
     // No bloquear la descarga si falla el guardado
   }
 
-  return new NextResponse(new Uint8Array(buffer), {
+  return new NextResponse(new Uint8Array(jpgBuffer), {
     headers: {
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="carnet-asprojuma-${num}.pdf"`,
+      'Content-Type': 'image/jpeg',
+      'Content-Disposition': `attachment; filename="carnet-asprojuma-${num}.jpg"`,
     },
   })
 }

@@ -140,7 +140,7 @@ export default async function CarnetPage() {
                   href="/api/carnet"
                   className="bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition"
                 >
-                  Descargar PDF
+                  Descargar JPG
                 </a>
               </>
             ) : (
@@ -150,7 +150,7 @@ export default async function CarnetPage() {
                   href="/api/carnet"
                   className="bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition"
                 >
-                  Descargar PDF provisional
+                  Descargar JPG provisional
                 </a>
               </div>
             )}
@@ -177,7 +177,7 @@ export default async function CarnetPage() {
                     {c.pdf_url && (
                       <a href={c.pdf_url} target="_blank" rel="noopener noreferrer"
                         className="text-blue-600 hover:text-blue-800 text-sm">
-                        PDF
+                        JPG
                       </a>
                     )}
                   </div>
