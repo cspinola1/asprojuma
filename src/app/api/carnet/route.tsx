@@ -45,9 +45,14 @@ export async function GET() {
   const logoBuffer = await logoRes.arrayBuffer()
   const logoBase64 = `data:image/png;base64,${Buffer.from(logoBuffer).toString('base64')}`
 
-  // Fuente Helvetica embebida via Arial del sistema (fallback)
-  const fontRes = await fetch('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff')
-  const fontBuffer = await fontRes.arrayBuffer()
+  const [fontRegRes, fontBoldRes] = await Promise.all([
+    fetch(`${appUrl}/fonts/inter-regular.woff2`),
+    fetch(`${appUrl}/fonts/inter-bold.woff2`),
+  ])
+  const [fontRegBuffer, fontBoldBuffer] = await Promise.all([
+    fontRegRes.arrayBuffer(),
+    fontBoldRes.arrayBuffer(),
+  ])
 
   const svg = await satori(
     <div
@@ -104,8 +109,8 @@ export async function GET() {
       width: W,
       height: H,
       fonts: [
-        { name: 'Inter', data: fontBuffer, weight: 400, style: 'normal' },
-        { name: 'Inter', data: fontBuffer, weight: 700, style: 'normal' },
+        { name: 'Inter', data: fontRegBuffer, weight: 400, style: 'normal' },
+        { name: 'Inter', data: fontBoldBuffer, weight: 700, style: 'normal' },
       ],
     }
   )
