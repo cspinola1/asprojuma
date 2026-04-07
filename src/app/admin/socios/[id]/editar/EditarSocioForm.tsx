@@ -80,10 +80,19 @@ export default function EditarSocioForm({
   })
 
   const set = (field: keyof EditarSocioData) => (v: string) =>
-    setForm(prev => ({ ...prev, [field]: v }))
+    setForm(prev => {
+      const next = { ...prev, [field]: v }
+      if (field === 'fecha_baja' && v && prev.estado === 'activo') next.estado = 'baja'
+      if (field === 'estado' && v === 'baja' && !prev.fecha_baja) next.fecha_baja = new Date().toISOString().split('T')[0]
+      return next
+    })
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (form.estado === 'baja' && !form.fecha_baja) {
+      setError('La fecha de baja es obligatoria cuando el estado es "Baja"')
+      return
+    }
     setGuardando(true)
     setError('')
     const result = await editarSocio(socio.id, socio.tipo, form)
