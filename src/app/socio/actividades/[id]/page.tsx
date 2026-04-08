@@ -35,15 +35,29 @@ export default async function ActividadDetallePage({ params }: { params: { id: s
         .single()
     : { data: null }
 
-  // Plazas disponibles
+  const { data: misInvitados } = socio
+    ? await admin
+        .from('actividades_invitados')
+        .select('id, nombre, email, estado')
+        .eq('actividad_id', actividad.id)
+        .eq('inscrito_por_socio_id', socio.id)
+        .neq('estado', 'cancelado')
+    : { data: [] }
+
+  // Plazas disponibles contando socios + invitados activos
   let plazasDisponibles: number | null = null
   if (actividad.plazas) {
-    const { count } = await admin
+    const { count: sociosCount } = await admin
       .from('actividades_inscripciones')
       .select('*', { count: 'exact', head: true })
       .eq('actividad_id', actividad.id)
       .in('estado', ['inscrito', 'pagado'])
-    plazasDisponibles = actividad.plazas - (count ?? 0)
+    const { count: invitadosCount } = await admin
+      .from('actividades_invitados')
+      .select('*', { count: 'exact', head: true })
+      .eq('actividad_id', actividad.id)
+      .in('estado', ['inscrito', 'pagado'])
+    plazasDisponibles = actividad.plazas - (sociosCount ?? 0) - (invitadosCount ?? 0)
   }
 
   const fechaInicio = new Date(actividad.fecha_inicio + 'T00:00:00')
@@ -121,8 +135,8 @@ export default async function ActividadDetallePage({ params }: { params: { id: s
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
               <p className="text-sm font-semibold text-amber-900 mb-1">Pago pendiente</p>
               <p className="text-sm text-amber-800">
-                Realiza una transferencia de <strong>{Number(actividad.precio).toFixed(2)} €</strong> a la cuenta de ASPROJUMA
-                indicando tu nombre y la actividad. Una vez confirmado el pago, recibirás la confirmación definitiva.
+                Realiza una transferencia indicando tu nombre y la actividad a la cuenta de ASPROJUMA.
+                Una vez confirmado el pago, recibirás la confirmación definitiva.
               </p>
             </div>
           )}
@@ -145,6 +159,10 @@ export default async function ActividadDetallePage({ params }: { params: { id: s
               inscrito={inscritoActivo}
               pagado={inscripcion?.estado === 'pagado'}
               sinPlazas={(plazasDisponibles !== null && plazasDisponibles <= 0 && !inscritoActivo)}
+              plazasDisponibles={plazasDisponibles}
+              precio={actividad.precio ?? 0}
+              precioInvitado={actividad.precio_invitado ?? null}
+              invitadosActuales={misInvitados ?? []}
             />
           ) : (
             <p className="text-sm text-gray-500 text-center">

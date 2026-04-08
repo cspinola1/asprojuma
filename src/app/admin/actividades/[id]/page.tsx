@@ -36,13 +36,14 @@ export default async function EditarActividadPage({ params }: { params: { id: st
               hora_fin: actividad.hora_fin ?? '',
               lugar: actividad.lugar ?? '',
               precio: String(actividad.precio ?? 0),
+              precio_invitado: actividad.precio_invitado != null ? String(actividad.precio_invitado) : '',
               plazas: actividad.plazas ? String(actividad.plazas) : '',
               estado: actividad.estado,
             }}
           />
         </div>
         <div>
-          <InscripcionesAdmin actividadId={actividad.id} precio={actividad.precio ?? 0} />
+          <InscripcionesAdmin actividadId={actividad.id} precio={actividad.precio ?? 0} precioInvitado={actividad.precio_invitado ?? null} />
         </div>
       </div>
     </div>
