@@ -80,7 +80,7 @@ export async function GET() {
           <div style={{ borderTop: `${2}px solid #93c5d8`, marginTop: 10*S, marginBottom: 10*S, marginLeft: 8*S, marginRight: 8*S }} />
 
           {/* Datos */}
-          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-evenly', paddingLeft: 8*S, paddingRight: 8*S }}>
+          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-around', paddingLeft: 8*S, paddingRight: 8*S }}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontSize: 5*S, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.8*S }}>Nombre</span>
               <span style={{ fontSize: 11*S, fontWeight: 700, color: '#111827' }}>{socio.nombre}</span>
