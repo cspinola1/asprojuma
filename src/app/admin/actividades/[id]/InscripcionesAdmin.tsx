@@ -215,18 +215,18 @@ export function InscripcionesAdmin({ actividadId, precio, precioInvitado }: {
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Nombre *</label>
                 <input value={nuevoNombre} onChange={e => setNuevoNombre(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Email</label>
                 <input type="email" value={nuevoEmail} onChange={e => setNuevoEmail(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">Notas</label>
               <input value={nuevoNotas} onChange={e => setNuevoNotas(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div className="flex gap-2">
               <button onClick={añadirInvitado} disabled={añadiendo || !nuevoNombre.trim()}
