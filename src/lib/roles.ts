@@ -8,7 +8,7 @@ export const ROLES: Rol[] = ['tesorero', 'secretario', 'junta', 'presidente', 'a
 export const PERMISOS: Record<string, Rol[]> = {
   dashboard:    ['tesorero', 'secretario', 'junta', 'presidente', 'admin'],
   socios:       ['tesorero', 'secretario', 'junta', 'presidente', 'admin'],
-  solicitudes:  ['tesorero', 'secretario', 'presidente', 'admin'],
+  solicitudes:  ['tesorero', 'secretario', 'junta', 'presidente', 'admin'],
   cuotas:       ['tesorero', 'presidente', 'admin'],
   remesas:      ['tesorero', 'presidente', 'admin'],
   carnets:      ['tesorero', 'secretario', 'presidente', 'admin'],
