@@ -22,9 +22,12 @@ export default async function ActividadDetallePage({ params }: { params: { id: s
 
   if (!actividad) notFound()
 
-  const { data: socio } = user
-    ? await admin.from('socios').select('id, estado').eq('user_id', user.id).single()
-    : { data: null }
+  const { data: socios } = user
+    ? await admin.from('socios').select('id, estado')
+        .or(`email_uma.eq.${user.email},email_otros.eq.${user.email}`)
+        .order('id', { ascending: true }).limit(1)
+    : { data: [] }
+  const socio = socios?.[0] ?? null
 
   const { data: inscripcion } = socio
     ? await admin

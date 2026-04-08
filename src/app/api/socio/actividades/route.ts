@@ -21,11 +21,13 @@ export async function POST(request: NextRequest) {
 
   const admin = createAdminClient()
 
-  const { data: socio } = await admin
+  const { data: socios } = await admin
     .from('socios')
     .select('id, estado')
-    .eq('user_id', user.id)
-    .single()
+    .or(`email_uma.eq.${user.email},email_otros.eq.${user.email}`)
+    .order('id', { ascending: true })
+    .limit(1)
+  const socio = socios?.[0] ?? null
 
   if (!socio || !['activo', 'activo_exento', 'honorario'].includes(socio.estado)) {
     return NextResponse.json({ error: 'Solo socios activos pueden inscribirse' }, { status: 403 })
