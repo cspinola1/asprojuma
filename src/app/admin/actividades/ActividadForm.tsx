@@ -167,7 +167,7 @@ export function ActividadForm({ inicial, modo }: Props) {
           {guardando ? 'Guardando…' : modo === 'nueva' ? 'Crear actividad' : 'Guardar cambios'}
         </button>
         <button type="button" onClick={() => router.back()}
-          className="px-6 border border-gray-300 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition">
+          className="px-6 border border-gray-300 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition">
           Cancelar
         </button>
         {modo === 'editar' && (

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { tienePermiso } from '@/lib/roles'
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   const supabase = await createClient()
@@ -30,6 +31,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     })
     .eq('id', params.id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidatePath('/admin/actividades')
   return NextResponse.json({ ok: true })
 }
 
