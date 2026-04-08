@@ -60,50 +60,52 @@ export async function GET() {
           style={{
             width: W,
             height: H,
-            backgroundColor: '#c8e6f5',
+            backgroundImage: 'linear-gradient(160deg, #e8f4fb 0%, #c8e6f5 50%, #a8d4ed 100%)',
             display: 'flex',
             flexDirection: 'column',
-            padding: `${12*S}px ${10*S}px ${10*S}px`,
+            padding: `${14*S}px ${10*S}px ${10*S}px`,
             fontFamily: 'Inter',
           }}
         >
           {/* Cabecera */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 8*S }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoBase64} width={48*S} height={48*S} alt="" style={{ marginBottom: 4*S }} />
-            <span style={{ fontSize: 13*S, fontWeight: 700, color: '#111827', letterSpacing: S }}>ASPROJUMA</span>
-            <span style={{ fontSize: 5.5*S, color: '#374151', marginTop: 2*S, textAlign: 'center' }}>Asociación de Profesores Jubilados de la</span>
+            <img src={logoBase64} width={60*S} height={60*S} alt="" style={{ marginBottom: 5*S }} />
+            <span style={{ fontSize: 15*S, fontWeight: 700, color: '#111827', letterSpacing: S }}>ASPROJUMA</span>
+            <span style={{ fontSize: 5.5*S, color: '#374151', marginTop: 3*S, textAlign: 'center' }}>Asociación de Profesores Jubilados de la</span>
             <span style={{ fontSize: 6*S, fontWeight: 700, color: '#111827', letterSpacing: 0.5*S }}>UNIVERSIDAD DE MÁLAGA</span>
           </div>
 
           {/* Divisor */}
-          <div style={{ borderTop: `${2}px solid #93c5d8`, marginBottom: 8*S }} />
+          <div style={{ borderTop: `${2}px solid #93c5d8`, marginTop: 10*S, marginBottom: 10*S, marginLeft: 8*S, marginRight: 8*S }} />
 
           {/* Datos */}
-          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingLeft: 8*S, paddingRight: 8*S }}>
-            <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 6*S }}>
-              <span style={{ fontSize: 5*S, fontWeight: 700, color: '#4b7a8f', textTransform: 'uppercase', letterSpacing: 0.5*S }}>Nombre</span>
-              <span style={{ fontSize: 9*S, fontWeight: 700, color: '#111827', fontStyle: 'italic' }}>{socio.nombre}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-evenly', paddingLeft: 8*S, paddingRight: 8*S }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: 5*S, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.8*S }}>Nombre</span>
+              <span style={{ fontSize: 11*S, fontWeight: 700, color: '#111827' }}>{socio.nombre}</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', marginBottom: 6*S }}>
-              <span style={{ fontSize: 5*S, fontWeight: 700, color: '#4b7a8f', textTransform: 'uppercase', letterSpacing: 0.5*S }}>Apellidos</span>
-              <span style={{ fontSize: 9*S, fontWeight: 700, color: '#111827', fontStyle: 'italic' }}>{socio.apellidos}</span>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: 5*S, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.8*S }}>Apellidos</span>
+              <span style={{ fontSize: 11*S, fontWeight: 700, color: '#111827' }}>{socio.apellidos}</span>
             </div>
-            <span style={{ fontSize: 7.5*S, fontWeight: 700, color: '#111827', marginTop: 4*S }}>{tipoLabel}  Nº {num}</span>
-            <span style={{ fontSize: 7.5*S, fontWeight: 700, color: '#111827', marginTop: 4*S }}>DNI:  {socio.dni ?? '—'}</span>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: 8.5*S, fontWeight: 700, color: '#111827' }}>{tipoLabel}  Nº {num}</span>
+              <span style={{ fontSize: 8.5*S, fontWeight: 700, color: '#111827', marginTop: 3*S }}>DNI:  {socio.dni ?? '—'}</span>
+            </div>
           </div>
 
           {/* Pie */}
-          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', paddingLeft: 8*S, paddingRight: 8*S, paddingBottom: 4*S }}>
+          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', paddingLeft: 8*S, paddingRight: 8*S, paddingBottom: 8*S }}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: 14*S, fontWeight: 700, color: '#111827' }}>Válido {anio}</span>
-              <div style={{ display: 'flex', flexDirection: 'row' }}>
-                <span style={{ fontSize: 10*S, fontWeight: 700, color: '#00a99d' }}>uma</span>
-                <span style={{ fontSize: 10*S, fontWeight: 700, color: '#007a73' }}>.es</span>
+              <span style={{ fontSize: 17*S, fontWeight: 700, color: '#111827' }}>Válido {anio}</span>
+              <div style={{ display: 'flex', flexDirection: 'row', marginTop: 3*S }}>
+                <span style={{ fontSize: 13*S, fontWeight: 700, color: '#00a99d' }}>uma</span>
+                <span style={{ fontSize: 13*S, fontWeight: 700, color: '#007a73' }}>.es</span>
               </div>
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={qrDataUrl} width={42*S} height={42*S} alt="" />
+            <img src={qrDataUrl} width={50*S} height={50*S} alt="" />
           </div>
         </div>
       ),
