@@ -22,7 +22,7 @@ const ROLES: { value: Rol; label: string }[] = [
 const PERMISOS_LABEL: Record<string, string[]> = {
   tesorero:    ['Dashboard', 'Socios', 'Solicitudes', 'Cuotas', 'Carnets', 'Remesas'],
   secretario:  ['Dashboard', 'Socios', 'Solicitudes', 'Editar socios'],
-  junta:       ['Dashboard', 'Socios', 'Actividades'],
+  junta:       ['Dashboard', 'Socios', 'Solicitudes', 'Actividades'],
   presidente:  ['Dashboard', 'Socios', 'Solicitudes', 'Cuotas', 'Carnets', 'Remesas', 'Editar socios', 'Actividades'],
   admin:       ['Todo'],
 }
@@ -176,7 +176,7 @@ export default function RolesPage() {
               {[
                 { label: 'Dashboard', permisos: ['tesorero','secretario','junta','presidente','admin'] },
                 { label: 'Ver socios', permisos: ['tesorero','secretario','junta','presidente','admin'] },
-                { label: 'Solicitudes', permisos: ['tesorero','secretario','presidente','admin'] },
+                { label: 'Solicitudes', permisos: ['tesorero','secretario','junta','presidente','admin'] },
                 { label: 'Cuotas', permisos: ['tesorero','presidente','admin'] },
                 { label: 'Carnets', permisos: ['tesorero','presidente','admin'] },
                 { label: 'Remesas', permisos: ['tesorero','presidente','admin'] },
