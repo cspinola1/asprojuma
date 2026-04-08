@@ -1,6 +1,8 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY)
+}
 const FROM = process.env.RESEND_FROM ?? 'ASPROJUMA <onboarding@resend.dev>'
 
 const FOOTER = `
@@ -22,7 +24,7 @@ export async function enviarEmailRecepcionSolicitud(
   nombre: string,
   apellidos: string,
 ) {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: email,
     subject: 'ASPROJUMA — Solicitud de admisión recibida',
@@ -60,7 +62,7 @@ export async function enviarConfirmacionInvitadoActividad(
   lugarActividad: string | null,
   pagado: boolean,
 ) {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: email,
     subject: `ASPROJUMA — Confirmación de inscripción: ${tituloActividad}`,
@@ -99,7 +101,7 @@ export async function enviarEmailRechazoSolicitud(
   apellidos: string,
   motivo: string,
 ) {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: email,
     subject: 'ASPROJUMA — Resolución de tu solicitud de admisión',

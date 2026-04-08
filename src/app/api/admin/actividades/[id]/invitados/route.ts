@@ -67,7 +67,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   // Enviar confirmación si se marca como pagado y tiene email
   if (estado === 'pagado' && invitado?.email) {
     try {
-      const act = invitado.actividades as { titulo: string; fecha_inicio: string; lugar: string | null } | null
+      const act = invitado.actividades as unknown as { titulo: string; fecha_inicio: string; lugar: string | null } | null
       if (act) {
         const fecha = new Date(act.fecha_inicio + 'T00:00:00').toLocaleDateString('es-ES', {
           weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',

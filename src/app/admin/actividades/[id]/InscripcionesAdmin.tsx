@@ -120,7 +120,7 @@ export function InscripcionesAdmin({ actividadId, precio, precioInvitado }: {
       body: JSON.stringify({
         nombre: nuevoNombre,
         email: nuevoEmail || null,
-        precio: precioInvitado ?? precio || null,
+        precio: (precioInvitado ?? precio) || null,
         notas: nuevoNotas || null,
       }),
     })
