@@ -6,7 +6,7 @@ import { CalendarioActividades, ActividadCal } from '@/components/CalendarioActi
 
 interface Actividad extends ActividadCal {
   estado: 'borrador' | 'publicada' | 'cancelada'
-  actividades_inscripciones: { count: number }[]
+  total_inscritos: number
 }
 
 const ESTADO_BADGE: Record<string, string> = {
@@ -81,7 +81,7 @@ export default function ActividadesAdminPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {actividades.map(a => {
-                  const inscritos = a.actividades_inscripciones?.[0]?.count ?? 0
+                  const inscritos = a.total_inscritos ?? 0
                   return (
                     <tr key={a.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3 font-medium text-gray-900">{a.titulo}</td>

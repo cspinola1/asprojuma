@@ -11,12 +11,19 @@ export async function GET() {
   }
 
   const admin = createAdminClient()
-  const { data, error } = await admin
-    .from('actividades')
-    .select('*, actividades_inscripciones(count)')
-    .order('fecha_inicio', { ascending: false })
+  const [{ data, error }, { data: sociosCounts }, { data: invitadosCounts }] = await Promise.all([
+    admin.from('actividades').select('*').order('fecha_inicio', { ascending: false }),
+    admin.from('actividades_inscripciones').select('actividad_id').in('estado', ['inscrito', 'pagado']),
+    admin.from('actividades_invitados').select('actividad_id').in('estado', ['inscrito', 'pagado']),
+  ])
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+
+  const totales: Record<number, number> = {}
+  for (const r of [...(sociosCounts ?? []), ...(invitadosCounts ?? [])]) {
+    totales[r.actividad_id] = (totales[r.actividad_id] ?? 0) + 1
+  }
+
+  return NextResponse.json((data ?? []).map(a => ({ ...a, total_inscritos: totales[a.id] ?? 0 })))
 }
 
 export async function POST(request: NextRequest) {
