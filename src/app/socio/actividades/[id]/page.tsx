@@ -47,6 +47,21 @@ export default async function ActividadDetallePage({ params }: { params: { id: s
         .neq('estado', 'cancelado')
     : { data: [] }
 
+  // Lista de inscritos
+  const { data: inscritos } = await admin
+    .from('actividades_inscripciones')
+    .select('socios(nombre, apellidos, tipo)')
+    .eq('actividad_id', actividad.id)
+    .in('estado', ['inscrito', 'pagado'])
+    .order('fecha_inscripcion')
+
+  const { data: invitadosInscritos } = await admin
+    .from('actividades_invitados')
+    .select('nombre')
+    .eq('actividad_id', actividad.id)
+    .in('estado', ['inscrito', 'pagado'])
+    .order('fecha_inscripcion')
+
   // Plazas disponibles contando socios + invitados activos
   let plazasDisponibles: number | null = null
   if (actividad.plazas) {
@@ -154,6 +169,28 @@ export default async function ActividadDetallePage({ params }: { params: { id: s
             fecha_fin={actividad.fecha_fin}
             hora_fin={actividad.hora_fin}
           />
+
+          {/* Lista de inscritos */}
+          {((inscritos ?? []).length > 0 || (invitadosInscritos ?? []).length > 0) && (
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+                Inscritos ({(inscritos ?? []).length + (invitadosInscritos ?? []).length} personas)
+              </p>
+              <div className="space-y-1">
+                {(inscritos ?? []).map((i, idx) => {
+                  const s = i.socios as unknown as { nombre: string | null; apellidos: string | null } | null
+                  return (
+                    <p key={idx} className="text-sm text-gray-700">
+                      {s?.apellidos}, {s?.nombre}
+                    </p>
+                  )
+                })}
+                {(invitadosInscritos ?? []).map((inv, idx) => (
+                  <p key={`inv-${idx}`} className="text-sm text-gray-500 italic">{inv.nombre} <span className="text-xs">(invitado)</span></p>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Botón inscripción */}
           {esSocioActivo ? (
