@@ -1,9 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export default async function VerificarPage({ params }: { params: { id: string } }) {
-  const supabase = await createClient()
+  const admin = createAdminClient()
 
-  const { data: socio } = await supabase
+  const { data: socio } = await admin
     .from('socios')
     .select('nombre, apellidos, tipo, num_socio, num_cooperante, estado, fecha_ingreso')
     .eq('id', params.id)
