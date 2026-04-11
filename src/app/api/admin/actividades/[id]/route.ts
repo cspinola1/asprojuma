@@ -32,6 +32,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     .eq('id', params.id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   revalidatePath('/admin/actividades')
+  revalidatePath(`/admin/actividades/${params.id}`)
   return NextResponse.json({ ok: true })
 }
 

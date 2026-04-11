@@ -1,5 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
+
+export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { ActividadForm } from '../ActividadForm'
 import { InscripcionesAdmin } from './InscripcionesAdmin'
