@@ -33,6 +33,8 @@ export function InscripcionBoton({
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState('')
   const [invitados, setInvitados] = useState<InvitadoForm[]>([])
+  const [invitadosExtra, setInvitadosExtra] = useState<InvitadoForm[]>([])
+  const [mostrarFormExtra, setMostrarFormExtra] = useState(false)
   const router = useRouter()
 
   function añadirInvitado() {
@@ -98,26 +100,97 @@ export function InscripcionBoton({
     )
   }
 
+  async function handleAñadirInvitados() {
+    const validos = invitadosExtra.filter(i => i.nombre.trim())
+    if (invitadosExtra.some(i => !i.nombre.trim())) { setError('El nombre es obligatorio para cada invitado'); return }
+    setCargando(true); setError('')
+    const res = await fetch('/api/socio/actividades', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actividadId, accion: 'añadir_invitados', invitados: validos }),
+    })
+    const data = await res.json()
+    if (data.error) { setError(data.error); setCargando(false); return }
+    setInvitadosExtra([])
+    setMostrarFormExtra(false)
+    router.refresh()
+    setCargando(false)
+  }
+
   if (inscrito) {
+    const maxInvExtra = plazasDisponibles !== null ? Math.max(0, plazasDisponibles) : 20
+    const precioAcompExtra = precioInvitado ?? precio
+
     return (
       <div className="space-y-3">
         {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
         <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
           <p className="text-sm font-medium text-blue-900">Estás inscrito/a</p>
         </div>
+
+        {/* Invitados ya registrados */}
         {invitadosActuales.length > 0 && (
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Invitados registrados</p>
             {invitadosActuales.map(inv => (
-              <p key={inv.id} className="text-sm text-gray-700">{inv.nombre}{inv.email && <span className="text-gray-400 ml-2">{inv.email}</span>}</p>
+              <p key={inv.id} className="text-sm text-gray-700">
+                {inv.nombre}
+                {inv.email && <span className="text-gray-400 ml-2">{inv.email}</span>}
+                {inv.estado === 'cancelado' && <span className="text-gray-400 ml-2 text-xs">(cancelado)</span>}
+              </p>
             ))}
           </div>
         )}
-        <button
-          onClick={handleCancelar}
-          disabled={cargando}
-          className="w-full py-2.5 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
-        >
+
+        {/* Formulario añadir invitados extra */}
+        {mostrarFormExtra && (
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Nuevos invitados / acompañantes</p>
+            {invitadosExtra.map((inv, i) => (
+              <div key={i} className="flex gap-2 items-start">
+                <div className="flex-1 flex gap-2">
+                  <input type="text" placeholder="Nombre *" value={inv.nombre}
+                    onChange={e => setInvitadosExtra(prev => prev.map((x, idx) => idx === i ? { ...x, nombre: e.target.value } : x))}
+                    className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input type="email" placeholder="Email" value={inv.email}
+                    onChange={e => setInvitadosExtra(prev => prev.map((x, idx) => idx === i ? { ...x, email: e.target.value } : x))}
+                    className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <button type="button" onClick={() => setInvitadosExtra(prev => prev.filter((_, idx) => idx !== i))}
+                  className="text-gray-400 hover:text-red-500 px-1 py-1.5 text-lg leading-none">×</button>
+              </div>
+            ))}
+            {invitadosExtra.length < maxInvExtra && (
+              <button type="button" onClick={() => setInvitadosExtra(prev => [...prev, { nombre: '', email: '' }])}
+                className="w-full py-1.5 rounded-lg text-sm border border-dashed border-gray-300 text-gray-500 hover:border-blue-400 hover:text-blue-600 transition">
+                + Añadir otro invitado
+              </button>
+            )}
+            {precioAcompExtra > 0 && invitadosExtra.length > 0 && (
+              <p className="text-xs text-gray-500">{Number(precioAcompExtra).toFixed(2)} € por invitado</p>
+            )}
+            <div className="flex gap-2">
+              <button onClick={handleAñadirInvitados} disabled={cargando || invitadosExtra.length === 0}
+                className="flex-1 py-2 rounded-lg text-sm font-medium bg-blue-700 text-white hover:bg-blue-800 transition disabled:opacity-50">
+                {cargando ? 'Guardando…' : 'Confirmar invitados'}
+              </button>
+              <button onClick={() => { setMostrarFormExtra(false); setInvitadosExtra([]) }}
+                className="px-4 py-2 rounded-lg text-sm border border-gray-300 text-gray-600 hover:bg-gray-50 transition">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!mostrarFormExtra && maxInvExtra > 0 && (
+          <button type="button" onClick={() => { setMostrarFormExtra(true); setInvitadosExtra([{ nombre: '', email: '' }]) }}
+            className="w-full py-2 rounded-lg text-sm border border-dashed border-gray-300 text-gray-500 hover:border-blue-400 hover:text-blue-600 transition">
+            + Añadir invitado / acompañante
+          </button>
+        )}
+
+        <button onClick={handleCancelar} disabled={cargando}
+          className="w-full py-2.5 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition disabled:opacity-50">
           {cargando ? 'Procesando…' : 'Cancelar inscripción'}
         </button>
         <p className="text-xs text-center text-gray-400">Cancelar también eliminará tus invitados pendientes de pago.</p>

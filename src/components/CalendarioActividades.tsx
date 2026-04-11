@@ -16,6 +16,7 @@ export interface ActividadCal {
   descripcion?: string | null
   fecha_fin?: string | null
   hora_fin?: string | null
+  estado?: string
 }
 
 interface Props {
@@ -67,6 +68,8 @@ export function CalendarioActividades({ actividades, modo, inscritasIds = [] }: 
 
   function colorActividad(a: ActividadCal, inscrita: boolean) {
     if (inscrita) return 'bg-blue-600 text-white'
+    if (a.estado === 'borrador') return 'bg-gray-100 text-gray-500 border border-dashed border-gray-300'
+    if (a.estado === 'cancelada') return 'bg-red-100 text-red-400 border border-red-200 line-through'
     if (a.precio > 0) return 'bg-orange-100 text-orange-800 border border-orange-200'
     return 'bg-green-100 text-green-800 border border-green-200'
   }
@@ -190,7 +193,13 @@ export function CalendarioActividades({ actividades, modo, inscritasIds = [] }: 
             </div>
           )}
           {modo === 'admin' && (
-            <span className="text-xs text-gray-400 ml-auto">Clic en día vacío para crear actividad</span>
+            <>
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded bg-gray-100 border border-dashed border-gray-300 inline-block" />
+                <span className="text-xs text-gray-500">Borrador</span>
+              </div>
+              <span className="text-xs text-gray-400 ml-auto">Clic en día vacío para crear actividad</span>
+            </>
           )}
         </div>
       </div>
@@ -218,6 +227,8 @@ export function CalendarioActividades({ actividades, modo, inscritasIds = [] }: 
                           {a.precio === 0 ? 'Gratuita' : `${Number(a.precio).toFixed(2)} €`}
                         </span>
                         {inscritasSet.has(a.id) && <span className="text-blue-700 font-medium">✓ Inscrito/a</span>}
+                        {modo === 'admin' && a.estado === 'borrador' && <span className="text-gray-400 italic">borrador</span>}
+                        {modo === 'admin' && a.estado === 'cancelada' && <span className="text-red-500">cancelada</span>}
                       </div>
                     </div>
                   </div>

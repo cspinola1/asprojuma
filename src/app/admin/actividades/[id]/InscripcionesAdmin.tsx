@@ -44,6 +44,7 @@ export function InscripcionesAdmin({ actividadId, precio, precioInvitado }: {
   const [invitados, setInvitados] = useState<Invitado[]>([])
   const [cargando, setCargando] = useState(true)
   const [actualizando, setActualizando] = useState<string | null>(null)
+  const [mostrarCancelados, setMostrarCancelados] = useState(false)
 
   // Nuevo invitado form
   const [nuevoNombre, setNuevoNombre] = useState('')
@@ -134,6 +135,9 @@ export function InscripcionesAdmin({ actividadId, precio, precioInvitado }: {
 
   const sociosActivos = inscripciones.filter(i => i.estado !== 'cancelado')
   const invitadosActivos = invitados.filter(i => i.estado !== 'cancelado')
+  const inscripcionesMostradas = mostrarCancelados ? inscripciones : sociosActivos
+  const invitadosMostrados = mostrarCancelados ? invitados : invitadosActivos
+  const totalCancelados = inscripciones.filter(i => i.estado === 'cancelado').length + invitados.filter(i => i.estado === 'cancelado').length
   const totalPersonas = sociosActivos.length + invitadosActivos.length
   const pendientesSocios = sociosActivos.filter(i => i.estado === 'inscrito' && precio > 0).length
   const pendientesInvitados = invitadosActivos.filter(i => i.estado === 'inscrito' && (precioInvitado ?? precio) > 0).length
@@ -146,12 +150,26 @@ export function InscripcionesAdmin({ actividadId, precio, precioInvitado }: {
   return (
     <div className="space-y-4">
       {/* Resumen */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex gap-6 text-sm">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-wrap items-center gap-4 text-sm">
         <span className="text-gray-700"><strong>{totalPersonas}</strong> personas</span>
         <span className="text-gray-500">{sociosActivos.length} socios · {invitadosActivos.length} invitados</span>
         {totalPendientes > 0 && (
           <span className="text-yellow-700">{totalPendientes} pendiente{totalPendientes !== 1 ? 's' : ''} de pago</span>
         )}
+        <div className="ml-auto flex items-center gap-2">
+          {totalCancelados > 0 && (
+            <button onClick={() => setMostrarCancelados(v => !v)}
+              className={`text-xs px-2 py-1 rounded border transition ${mostrarCancelados ? 'bg-gray-100 border-gray-300 text-gray-700' : 'border-gray-200 text-gray-400 hover:text-gray-600'}`}>
+              {mostrarCancelados ? `Ocultar cancelados (${totalCancelados})` : `Mostrar cancelados (${totalCancelados})`}
+            </button>
+          )}
+          {totalPersonas > 0 && (
+            <a href={`/api/admin/actividades/${actividadId}/exportar`}
+              className="text-xs px-2 py-1 rounded border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 transition">
+              ↓ Exportar CSV
+            </a>
+          )}
+        </div>
       </div>
 
       {/* Socios inscritos */}
@@ -159,11 +177,11 @@ export function InscripcionesAdmin({ actividadId, precio, precioInvitado }: {
         <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Socios inscritos</h2>
         {cargando ? (
           <p className="text-sm text-gray-400">Cargando…</p>
-        ) : inscripciones.length === 0 ? (
+        ) : inscripcionesMostradas.length === 0 ? (
           <p className="text-sm text-gray-400">Nadie inscrito aún.</p>
         ) : (
           <div className="space-y-2">
-            {inscripciones.map(i => (
+            {inscripcionesMostradas.map(i => (
               <div key={i.id} className={`flex items-center justify-between border rounded-lg px-3 py-2 ${i.estado === 'cancelado' ? 'border-gray-100 opacity-50' : 'border-gray-200'}`}>
                 <div>
                   <p className="text-sm font-medium text-gray-900">
@@ -243,11 +261,11 @@ export function InscripcionesAdmin({ actividadId, precio, precioInvitado }: {
 
         {cargando ? (
           <p className="text-sm text-gray-400">Cargando…</p>
-        ) : invitados.length === 0 ? (
+        ) : invitadosMostrados.length === 0 ? (
           <p className="text-sm text-gray-400">Sin invitados externos.</p>
         ) : (
           <div className="space-y-2">
-            {invitados.map(i => (
+            {invitadosMostrados.map(i => (
               <div key={i.id} className={`flex items-center justify-between border rounded-lg px-3 py-2 ${i.estado === 'cancelado' ? 'border-gray-100 opacity-50' : 'border-gray-200'}`}>
                 <div>
                   <p className="text-sm font-medium text-gray-900">
