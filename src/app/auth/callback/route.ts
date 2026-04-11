@@ -6,7 +6,9 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
   const type = searchParams.get('type') // 'recovery' | 'invite' | 'signup'
-  const next = searchParams.get('next') ?? '/'
+  // Validar next para evitar open redirect: solo rutas relativas internas
+  const rawNext = searchParams.get('next') ?? '/'
+  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/'
 
   if (code) {
     const cookieStore = await cookies()

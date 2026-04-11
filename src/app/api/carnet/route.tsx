@@ -26,7 +26,7 @@ export async function GET() {
     const admin = createAdminClient()
     const { data: socios } = await admin
       .from('socios')
-      .select('*')
+      .select('id, tipo, nombre, apellidos, dni, num_socio, num_cooperante')
       .or(`email_uma.eq.${user.email},email_otros.eq.${user.email}`)
       .order('id', { ascending: true })
       .limit(1)

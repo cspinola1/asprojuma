@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = request.nextUrl
-  const q = searchParams.get('q')
+  const q = searchParams.get('q')?.slice(0, 100).replace(/[%_\\]/g, '\\$&')
   const tipo = searchParams.get('tipo')
   const estado = searchParams.get('estado')
 

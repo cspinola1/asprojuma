@@ -85,7 +85,7 @@ export default async function SociosAdminPage({ searchParams }: Props) {
     query = query.eq('estado', searchParams.estado as EstadoSocio)
   }
   if (searchParams.q) {
-    const q = searchParams.q.trim()
+    const q = searchParams.q.trim().slice(0, 100).replace(/[%_\\]/g, '\\$&')
     query = query.or(`apellidos.ilike.%${q}%,nombre.ilike.%${q}%,email_principal.ilike.%${q}%,dni.ilike.%${q}%`)
   }
 

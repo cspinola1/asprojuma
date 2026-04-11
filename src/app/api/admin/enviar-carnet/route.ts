@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   if (!socioId) return NextResponse.json({ error: 'socioId requerido' }, { status: 400 })
 
   const admin = createAdminClient()
-  const { data: socio } = await admin.from('socios').select('*').eq('id', socioId).single()
+  const { data: socio } = await admin.from('socios').select('id, tipo, nombre, apellidos, dni, num_socio, num_cooperante, email_principal, email_uma, email_otros').eq('id', socioId).single()
   if (!socio) return NextResponse.json({ error: 'Socio no encontrado' }, { status: 404 })
 
   const email = socio.email_principal
