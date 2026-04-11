@@ -5,6 +5,54 @@ Cada entrada incluye fecha, hora y descripción detallada de lo hecho.
 
 ---
 
+## 2026-04-10 — Invitados en Actividades, Carnet JPG y fixes UX
+
+### Implementado
+
+- **Carnet JPG mejorado**: degradado de fondo (linear-gradient), logo más grande, textos mayores, distribución uniforme con `space-around`. Fix: satori no soporta `space-evenly` ni `background` (hay que usar `backgroundImage`).
+
+- **Invitados externos en actividades** (tabla `actividades_invitados`):
+  - Campos: `id`, `actividad_id`, `nombre`, `email`, `estado`, `fecha_inscripcion`, `fecha_pago`, `precio`, `notas`, `inscrito_por_socio_id`
+  - Socio puede añadir invitados al inscribirse (nombre obligatorio, email opcional, selector dinámico +/-)
+  - Admin puede añadir invitados directamente desde panel de la actividad
+  - Email de confirmación automático via Resend al marcar pagado (o inmediato si actividad gratuita)
+  - Cancelar inscripción de socio cancela también sus invitados pendientes de pago
+  - Plazas cuentan socios + invitados activos (no cancelados)
+
+- **Lista de inscritos en ficha de actividad** (vista socio): muestra socios e invitados activos con nombre
+
+- **Columna inscritos en listado admin**: ahora suma socios + invitados activos (antes solo contaba socios y no excluía cancelados)
+
+- **Login**: botón 👁️ para ver/ocultar contraseña
+
+- **Roles**: permiso `solicitudes` añadido al rol `junta` (en `roles.ts` y en tabla visual de `/admin/roles`)
+
+- **Búsqueda socio por email**: en actividades (página detalle y API), igual que en el carnet — busca por `email_uma` o `email_otros` en lugar de `user_id`
+
+### Decisiones técnicas
+
+- **Una sola tabla `actividades_invitados`** para todos los no-socios (acompañantes informales e invitados externos con datos). Diseño elegido frente a mantener `num_invitados` en la inscripción del socio.
+- **Resend inicializado lazy** (`getResend()` en lugar de `const resend = new Resend(...)` al importar) para evitar fallo de build cuando `RESEND_API_KEY` no está disponible en entorno local.
+- La tabla de permisos en `/admin/roles/page.tsx` está hardcodeada (independiente de `roles.ts`). Hay que mantener ambas sincronizadas manualmente al cambiar permisos.
+
+### Problemas encontrados y soluciones
+
+- **Build error `space-evenly`**: satori no soporta `justifyContent: 'space-evenly'`. Cambiado a `'space-around'`.
+- **Build error `Resend API key`**: `new Resend(undefined)` lanza en tiempo de importación. Solución: función `getResend()` lazy.
+- **Build error TypeScript cast**: `invitado.actividades as {...}` fallaba por tipo array. Solución: cast a `unknown` primero.
+- **Texto invisible en inputs**: faltaba `text-gray-900` en campos del formulario de invitados (admin y socio). Añadido.
+- **"Solo socios activos pueden inscribirse"**: la búsqueda del socio usaba `user_id` (no enlazado en BD). Corregido buscando por `email_uma` o `email_otros`.
+- **Precio no actualizado en popover**: caché de Next.js. Solucionado con `revalidatePath('/admin/actividades')` tras PATCH.
+
+### Pendiente para próxima sesión
+
+- 📋 **Comunicaciones**: envío masivo de emails a grupos de socios por tipo/estado
+- 📋 **Actividades — recordatorio 48h**: email automático a inscritos
+- 📋 **Actividades — exportar CSV**: lista de inscritos desde admin
+- ⚠️ **Variables Vercel** pendientes: `ASPROJUMA_IAS`, `ASPROJUMA_IBAN`, `ASPROJUMA_BIC`
+
+---
+
 ## Sesión · 2026-04-02b — Calendario visual y pulido UX
 
 ### Implementado

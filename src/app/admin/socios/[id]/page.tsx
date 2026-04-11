@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Socio, SocioProfesor, EstadoSocio } from '@/lib/types'
@@ -52,7 +53,8 @@ export default async function SocioDetallePage({ params }: { params: { id: strin
   const { data: { user } } = await supabase.auth.getUser()
   const puedeEditar = await tienePermiso(user, 'editar_socio')
 
-  const { data: socio } = await supabase
+  const admin = createAdminClient()
+  const { data: socio } = await admin
     .from('socios')
     .select('*, socios_profesores(centro, departamento, area_conocimiento, fecha_jubilacion, categoria)')
     .eq('id', params.id)

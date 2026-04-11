@@ -1,15 +1,14 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { enviarEmailRechazoSolicitud } from '@/lib/email'
 
 export async function aprobarSolicitud(id: number): Promise<{ error?: string }> {
-  const supabase = await createClient()
+  const db = createAdminClient()
 
   // Obtener el socio pendiente
-  const { data: socio } = await supabase
+  const { data: socio } = await db
     .from('socios')
     .select('tipo, email_uma, email_otros')
     .eq('id', id)
@@ -25,7 +24,7 @@ export async function aprobarSolicitud(id: number): Promise<{ error?: string }> 
 
   if (socio.tipo === 'profesor') {
     // Siguiente número de socio profesor
-    const { data: maxRow } = await supabase
+    const { data: maxRow } = await db
       .from('socios')
       .select('num_socio')
       .eq('tipo', 'profesor')
@@ -37,7 +36,7 @@ export async function aprobarSolicitud(id: number): Promise<{ error?: string }> 
     updateData.num_socio = (maxRow?.num_socio ?? 146) + 1
   } else {
     // Siguiente número de cooperante
-    const { data: maxRow } = await supabase
+    const { data: maxRow } = await db
       .from('socios')
       .select('num_cooperante')
       .eq('tipo', 'cooperante')
@@ -49,7 +48,7 @@ export async function aprobarSolicitud(id: number): Promise<{ error?: string }> 
     updateData.num_cooperante = (maxRow?.num_cooperante ?? 54) + 1
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('socios')
     .update(updateData)
     .eq('id', id)
@@ -80,9 +79,9 @@ export async function rechazarSolicitud(
   id: number,
   motivo: string
 ): Promise<{ error?: string }> {
-  const supabase = await createClient()
+  const db = createAdminClient()
 
-  const { data: socio } = await supabase
+  const { data: socio } = await db
     .from('socios')
     .select('notas, nombre, apellidos, email_uma, email_otros')
     .eq('id', id)
@@ -91,7 +90,7 @@ export async function rechazarSolicitud(
   const notasActuales = socio?.notas ?? ''
   const notasNuevas = `RECHAZADA: ${motivo}\n${notasActuales}`.trim()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('socios')
     .update({
       estado: 'baja',

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import { TipoSocio, EstadoSocio } from '@/lib/types'
 
@@ -59,7 +59,7 @@ function SortLink({
 }
 
 export default async function SociosAdminPage({ searchParams }: Props) {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const sortCol = (searchParams.sort as SortCol) ?? 'apellidos'
   const sortDir: SortDir = searchParams.dir === 'desc' ? 'desc' : 'asc'

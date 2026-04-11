@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 
 interface CuotaRemesa {
   id: number
@@ -55,13 +54,9 @@ export default function RemesaDetallePage() {
 
   const cargar = useCallback(async () => {
     setCargando(true)
-    const supabase = createClient()
-    const { data } = await supabase
-      .from('cuotas')
-      .select('id, socio_id, anio, semestre, importe, estado, fecha_cobro, motivo_devolucion, socios(num_socio, num_cooperante, tipo, nombre, apellidos, iban)')
-      .eq('referencia_remesa', refDecoded)
-      .order('socio_id')
-    setCuotas((data ?? []) as unknown as CuotaRemesa[])
+    const res = await fetch(`/api/admin/remesas/cuotas?ref=${encodeURIComponent(refDecoded)}`)
+    const data = await res.json()
+    setCuotas((Array.isArray(data) ? data : []) as unknown as CuotaRemesa[])
     setCargando(false)
   }, [refDecoded])
 

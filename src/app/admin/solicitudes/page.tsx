@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 
 export default async function SolicitudesAdminPage() {
-  const supabase = await createClient()
+  const admin = createAdminClient()
 
-  const { data: solicitudes } = await supabase
+  const { data: solicitudes } = await admin
     .from('socios')
     .select('id, tipo, nombre, apellidos, email_principal, created_at, notas')
     .eq('estado', 'pendiente')

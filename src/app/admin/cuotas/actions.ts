@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { EstadoCuota } from '@/lib/types'
 
@@ -9,8 +9,8 @@ export async function cambiarEstadoCuota(
   estado: EstadoCuota,
   fecha_cobro?: string
 ): Promise<{ error?: string }> {
-  const supabase = await createClient()
-  const { error } = await supabase
+  const admin = createAdminClient()
+  const { error } = await admin
     .from('cuotas')
     .update({
       estado,
@@ -24,8 +24,8 @@ export async function cambiarEstadoCuota(
 }
 
 export async function eliminarCuota(id: number): Promise<{ error?: string }> {
-  const supabase = await createClient()
-  const { error } = await supabase.from('cuotas').delete().eq('id', id)
+  const admin = createAdminClient()
+  const { error } = await admin.from('cuotas').delete().eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/admin/cuotas')
   return {}
@@ -42,8 +42,8 @@ export async function crearCuota(data: {
   referencia_remesa?: string
   notas?: string
 }): Promise<{ error?: string }> {
-  const supabase = await createClient()
-  const { error } = await supabase.from('cuotas').insert(data)
+  const admin = createAdminClient()
+  const { error } = await admin.from('cuotas').insert(data)
   if (error) return { error: error.message }
   revalidatePath('/admin/cuotas')
   return {}

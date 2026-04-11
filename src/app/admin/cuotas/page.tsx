@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import { Cuota, EstadoCuota } from '@/lib/types'
 import { AccionEstado, AccionEliminar } from './CuotasAcciones'
@@ -30,7 +30,7 @@ type CuotaConSocio = Cuota & {
 }
 
 export default async function CuotasAdminPage({ searchParams }: Props) {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const anioActual = new Date().getFullYear()
 
   const { data: ultimoAnio } = await supabase
@@ -68,7 +68,7 @@ export default async function CuotasAdminPage({ searchParams }: Props) {
 
   const { data: anios } = await supabase
     .from('cuotas').select('anio').order('anio', { ascending: false })
-  const aniosUnicos = Array.from(new Set((anios ?? []).map(r => r.anio)))
+  const aniosUnicos = Array.from(new Set((anios ?? []).map((r: { anio: number }) => r.anio)))
 
   const { data: statsData } = await supabase
     .from('cuotas').select('estado, importe').eq('anio', anioFiltro)

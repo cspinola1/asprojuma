@@ -118,19 +118,37 @@ Matriz de permisos:
 ---
 
 ## FASE 5 — Actividades ✅ COMPLETADA
-**Completada:** 2026-04-02
+**Completada:** 2026-04-10
 
 - [x] Tablas `actividades` y `actividades_inscripciones` en Supabase
 - [x] Admin: listar, crear, editar y eliminar actividades
 - [x] Admin: gestión de inscripciones por actividad (marcar pagado / cancelar)
-- [x] Socio: listado de próximas actividades agrupado por mes
+- [x] Socio: listado de próximas actividades en calendario mensual
 - [x] Socio: ficha detalle con inscripción / cancelación online
-- [x] Actividades de pago: instrucciones de transferencia bancaria pendiente
-- [x] Vista de calendario mensual estilo Google Calendar (2026-04-02)
-- [ ] Email de confirmación al inscribirse
+- [x] Actividades de pago: instrucciones de transferencia bancaria
+- [x] Vista de calendario mensual estilo Google Calendar
+- [x] Carnet generado como JPG (alta resolución ×4) con ImageResponse + sharp (2026-04-10)
+- [x] **Invitados externos**: tabla `actividades_invitados` con nombre, email, precio, estado (2026-04-10)
+- [x] Socio puede añadir invitados al inscribirse (nombre obligatorio, email opcional)
+- [x] Admin puede añadir/gestionar invitados externos desde panel de actividad
+- [x] Email de confirmación automático a invitados al pagar (o inmediato si gratuita)
+- [x] Plazas cuentan socios + invitados activos
+- [x] Lista de inscritos visible en ficha de actividad (vista socio)
+- [x] Columna inscritos en listado admin suma socios + invitados (sin cancelados)
 - [ ] Recordatorio automático 48h antes
 - [ ] Lista de espera cuando se completa el aforo
 - [ ] Exportar lista de inscritos a CSV
+
+---
+
+## FASE 6 — Mejoras UX y fixes (2026-04-10)
+
+- [x] Carnet JPG: degradado de fondo, textos más grandes, distribución uniforme
+- [x] Login: botón ver/ocultar contraseña
+- [x] Roles: permiso Solicitudes añadido al rol Junta
+- [x] Búsqueda socio por email en actividades (mismo método que carnet)
+- [x] Revalidación de caché tras guardar actividad
+- [x] SMTP UMA (correo.uma.es) configurado para emails de auth Supabase
 
 ---
 
@@ -143,3 +161,12 @@ Matriz de permisos:
 - [ ] Notificación al admin cuando llega nueva solicitud de alta
 - [ ] Portal público con información de actividades (sin login)
 - [ ] Historial de cambios por socio (audit log)
+
+---
+
+## 📋 Planificado
+
+- **Comunicaciones**: envío masivo de emails a grupos de socios (por tipo/estado)
+- **Actividades — recordatorio 48h**: email automático a inscritos antes de la actividad
+- **Actividades — exportar CSV**: lista de inscritos descargable desde admin
+- **Actividades — lista de espera**: cuando se completa el aforo

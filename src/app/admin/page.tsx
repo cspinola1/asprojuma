@@ -1,10 +1,11 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 
-async function getStats(supabase: Awaited<ReturnType<typeof createClient>>) {
+async function getStats() {
+  const admin = createAdminClient()
   const [profesores, cooperantes] = await Promise.all([
-    supabase.from('socios').select('estado').eq('tipo', 'profesor'),
-    supabase.from('socios').select('estado').eq('tipo', 'cooperante'),
+    admin.from('socios').select('estado').eq('tipo', 'profesor'),
+    admin.from('socios').select('estado').eq('tipo', 'cooperante'),
   ])
 
   const contar = (rows: { estado: string }[] | null, estado: string) =>
@@ -24,8 +25,7 @@ async function getStats(supabase: Awaited<ReturnType<typeof createClient>>) {
 }
 
 export default async function AdminPage() {
-  const supabase = await createClient()
-  const stats = await getStats(supabase)
+  const stats = await getStats()
 
   const tarjetas = [
     { label: 'Socios profesores activos', valor: stats.profActivos, color: 'text-blue-700', bg: 'bg-blue-50', href: '/admin/socios?tipo=profesor&estado=activo' },
