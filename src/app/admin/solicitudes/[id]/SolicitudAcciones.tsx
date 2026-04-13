@@ -87,6 +87,7 @@ export function BotonesAccion({
   const [error, setError] = useState('')
 
   const avalesPendientes = tipo === 'cooperante' && (!aval1Confirmado || !aval2Confirmado)
+  const avalesCompletos = tipo === 'cooperante' && aval1Confirmado && aval2Confirmado
 
   async function handleAprobar() {
     if (!confirm(`¿Aprobar esta solicitud y asignar número de ${tipo === 'profesor' ? 'socio' : 'cooperante'}?`)) return
@@ -142,8 +143,8 @@ export function BotonesAccion({
         </button>
         <button
           onClick={() => setMostrarRechazo(!mostrarRechazo)}
-          disabled={!!cargando}
-          className="bg-red-50 text-red-700 border border-red-200 px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-red-100 transition disabled:opacity-50"
+          disabled={!!cargando || avalesCompletos}
+          className="bg-red-50 text-red-700 border border-red-200 px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-red-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           ✗ Rechazar solicitud
         </button>
