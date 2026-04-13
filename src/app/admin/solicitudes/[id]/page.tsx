@@ -42,11 +42,13 @@ export default async function SolicitudDetallePage({ params }: { params: { id: s
     ? await supabase.from('socios_cooperantes').select('*').eq('socio_id', socio.id).single()
     : { data: null }
 
-  // Extraer avalistas de notas (cooperante)
-  const avalistasMatch = socio.notas?.match(/AVALISTAS: (.+)/)
+  // Extraer avalistas y estado de confirmación de notas (cooperante)
+  const avalistasMatch = socio.notas?.match(/AVALISTAS: ([^\n]+)/)
   const [avalista1, avalista2] = avalistasMatch
     ? avalistasMatch[1].split(' | ')
     : [null, null]
+  const aval1Confirmado = (socio.notas ?? '').includes('AVAL1_CONFIRMADO')
+  const aval2Confirmado = (socio.notas ?? '').includes('AVAL2_CONFIRMADO')
 
   // Número que se asignará si se aprueba
   const { data: maxProf } = await supabase
@@ -143,7 +145,16 @@ export default async function SolicitudDetallePage({ params }: { params: { id: s
       {/* Acciones */}
       <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
         <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Decisión</h2>
-        <BotonesAccion id={socio.id} tipo={socio.tipo} />
+        <BotonesAccion
+          id={socio.id}
+          tipo={socio.tipo}
+          avalista1={avalista1}
+          avalista2={avalista2}
+          aval1Confirmado={aval1Confirmado}
+          aval2Confirmado={aval2Confirmado}
+          nombreCooperante={socio.nombre}
+          apellidosCooperante={socio.apellidos}
+        />
       </section>
     </div>
   )

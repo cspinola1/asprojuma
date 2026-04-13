@@ -115,12 +115,14 @@ export async function enviarSolicitudCooperante(
     } catch { /* No bloquear si falla el email */ }
   }
 
-  // Enviar email a los dos avalistas
+  // Enviar email a los dos avalistas (los errores se loguean pero no bloquean)
   for (const emailAvalista of [data.avalista1_email.trim(), data.avalista2_email.trim()]) {
     if (emailAvalista) {
       try {
         await enviarEmailAvalistaCooperante(emailAvalista, data.nombre.trim(), data.apellidos.trim())
-      } catch { /* No bloquear si falla el email */ }
+      } catch (e) {
+        console.error('Error enviando email a avalista', emailAvalista, e)
+      }
     }
   }
 

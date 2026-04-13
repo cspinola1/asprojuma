@@ -2,7 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
-import { enviarEmailRechazoSolicitud } from '@/lib/email'
+import { enviarEmailRechazoSolicitud, enviarEmailAvalistaCooperante } from '@/lib/email'
 
 export async function aprobarSolicitud(id: number): Promise<{ error?: string }> {
   const db = createAdminClient()
@@ -16,11 +16,17 @@ export async function aprobarSolicitud(id: number): Promise<{ error?: string }> 
 
   if (!socio) return { error: 'Solicitud no encontrada' }
 
-  // Avisar si un cooperante no tiene avalistas registrados
+  // Bloquear aprobación de cooperante si no tienen los dos avales confirmados manualmente
   if (socio.tipo === 'cooperante') {
-    const tieneAvalistas = (socio.notas ?? '').includes('AVALISTAS:')
+    const notas = socio.notas ?? ''
+    const tieneAvalistas = notas.includes('AVALISTAS:')
     if (!tieneAvalistas) {
       return { error: 'Este cooperante no tiene avalistas registrados en su solicitud.' }
+    }
+    const aval1ok = notas.includes('AVAL1_CONFIRMADO')
+    const aval2ok = notas.includes('AVAL2_CONFIRMADO')
+    if (!aval1ok || !aval2ok) {
+      return { error: 'Faltan avales por confirmar. Marca ambos avales como confirmados antes de aprobar.' }
     }
   }
 
@@ -126,4 +132,49 @@ export async function rechazarSolicitud(
   revalidatePath('/admin/solicitudes')
   revalidatePath(`/admin/solicitudes/${id}`)
   return {}
+}
+
+// Marca un aval como confirmado (aval: 1 o 2) y refresca la ficha
+export async function confirmarAval(id: number, aval: 1 | 2): Promise<{ error?: string }> {
+  const db = createAdminClient()
+
+  const { data: socio } = await db
+    .from('socios')
+    .select('notas')
+    .eq('id', id)
+    .single()
+
+  if (!socio) return { error: 'Solicitud no encontrada' }
+
+  const marca = `AVAL${aval}_CONFIRMADO`
+  if ((socio.notas ?? '').includes(marca)) return {} // ya estaba marcado
+
+  const notasNuevas = `${(socio.notas ?? '').trim()}\n${marca}`.trim()
+
+  const { error } = await db
+    .from('socios')
+    .update({ notas: notasNuevas, updated_at: new Date().toISOString() })
+    .eq('id', id)
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/admin/solicitudes/${id}`)
+  return {}
+}
+
+// Reenvía el email de aval a un avalista y devuelve error visible si falla
+export async function reenviarEmailAvalista(
+  id: number,
+  emailAvalista: string,
+  nombreCooperante: string,
+  apellidosCooperante: string,
+): Promise<{ error?: string; ok?: boolean }> {
+  try {
+    await enviarEmailAvalistaCooperante(emailAvalista, nombreCooperante, apellidosCooperante)
+    return { ok: true }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    console.error('Error enviando email a avalista', emailAvalista, msg)
+    return { error: `No se pudo enviar el email a ${emailAvalista}: ${msg}` }
+  }
 }
