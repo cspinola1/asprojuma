@@ -3,7 +3,9 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { tienePermiso } from '@/lib/roles'
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
-import { generarCarnetPDF } from '@/lib/carnet-pdf'
+import { generarCarnetJPG } from '@/lib/carnet-jpg'
+
+export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -16,29 +18,41 @@ export async function POST(request: NextRequest) {
   if (!socioId) return NextResponse.json({ error: 'socioId requerido' }, { status: 400 })
 
   const admin = createAdminClient()
-  const { data: socio } = await admin.from('socios').select('id, tipo, nombre, apellidos, dni, num_socio, num_cooperante, email_principal, email_uma, email_otros').eq('id', socioId).single()
+  const { data: socio } = await admin
+    .from('socios')
+    .select('id, tipo, nombre, apellidos, dni, num_socio, num_cooperante, email_principal, email_uma, email_otros')
+    .eq('id', socioId)
+    .single()
   if (!socio) return NextResponse.json({ error: 'Socio no encontrado' }, { status: 404 })
 
   const email = socio.email_principal
   if (!email) return NextResponse.json({ error: 'El socio no tiene email registrado' }, { status: 400 })
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://asprojuma.vercel.app'
-  const logoRes = await fetch(`${appUrl}/logo-uma.png`)
-  const logoBase64 = `data:image/png;base64,${Buffer.from(await logoRes.arrayBuffer()).toString('base64')}`
-
   const anio = new Date().getFullYear()
-  const buffer = await generarCarnetPDF(socio, logoBase64, anio)
+  const jpgBuffer = await generarCarnetJPG(socio, anio)
 
-  // Guardar en Storage y actualizar carnets
-  const storagePath = `${socio.id}/${anio}.pdf`
-  await admin.storage.from('carnets').upload(storagePath, new Uint8Array(buffer), { contentType: 'application/pdf', upsert: true })
+  // Guardar JPG en Storage y borrar PDF antiguo
+  const storagePath = `${socio.id}/${anio}.jpg`
+  await admin.storage.from('carnets').upload(storagePath, new Uint8Array(jpgBuffer), {
+    contentType: 'image/jpeg',
+    upsert: true,
+  })
+  await admin.storage.from('carnets').remove([`${socio.id}/${anio}.pdf`])
+
   const { data: urlData } = admin.storage.from('carnets').getPublicUrl(storagePath)
   await admin.from('carnets').upsert(
-    { socio_id: socio.id, anio_vigencia: anio, estado: 'vigente', fecha_emision: new Date().toISOString().slice(0, 10), fecha_caducidad: `${anio}-12-31`, pdf_url: urlData.publicUrl, enviado_email: true },
-    { onConflict: 'socio_id,anio_vigencia' }
+    {
+      socio_id: socio.id,
+      anio_vigencia: anio,
+      estado: 'vigente',
+      fecha_emision: new Date().toISOString().slice(0, 10),
+      fecha_caducidad: `${anio}-12-31`,
+      pdf_url: urlData.publicUrl,
+      enviado_email: true,
+    },
+    { onConflict: 'socio_id,anio_vigencia' },
   )
 
-  // Enviar email con Resend
   const num = socio.tipo === 'profesor' ? socio.num_socio : socio.num_cooperante
   const resend = new Resend(process.env.RESEND_API_KEY)
   const { error: emailError } = await resend.emails.send({
@@ -70,8 +84,8 @@ export async function POST(request: NextRequest) {
     `,
     attachments: [
       {
-        filename: `carnet-asprojuma-${num}-${anio}.pdf`,
-        content: buffer.toString('base64'),
+        filename: `carnet-asprojuma-${num}-${anio}.jpg`,
+        content: jpgBuffer.toString('base64'),
       },
     ],
   })

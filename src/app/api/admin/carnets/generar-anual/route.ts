@@ -2,9 +2,10 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { tienePermiso } from '@/lib/roles'
 import { NextResponse } from 'next/server'
-import { generarCarnetPDF } from '@/lib/carnet-pdf'
+import { generarCarnetJPG } from '@/lib/carnet-jpg'
 
 export const maxDuration = 300
+export const runtime = 'nodejs'
 
 export async function POST() {
   const supabase = await createClient()
@@ -16,7 +17,6 @@ export async function POST() {
   const admin = createAdminClient()
   const anio = new Date().getFullYear()
 
-  // Obtener todos los socios activos
   const { data: socios, error } = await admin
     .from('socios')
     .select('id, nombre, apellidos, dni, tipo, num_socio, num_cooperante')
@@ -27,26 +27,23 @@ export async function POST() {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!socios?.length) return NextResponse.json({ generados: 0, errores: [] })
 
-  // Cargar logo una sola vez
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://asprojuma.vercel.app'
-  const logoRes = await fetch(`${appUrl}/logo-uma.png`)
-  const logoBase64 = `data:image/png;base64,${Buffer.from(await logoRes.arrayBuffer()).toString('base64')}`
-
   let generados = 0
   const errores: { id: number; nombre: string; motivo: string }[] = []
 
   for (const socio of socios) {
     try {
-      const buffer = await generarCarnetPDF(socio, logoBase64, anio)
-      const storagePath = `${socio.id}/${anio}.pdf`
+      const jpgBuffer = await generarCarnetJPG(socio, anio)
+      const storagePath = `${socio.id}/${anio}.jpg`
 
-      await admin.storage.from('carnets').upload(storagePath, new Uint8Array(buffer), {
-        contentType: 'application/pdf',
+      // Subir JPG
+      await admin.storage.from('carnets').upload(storagePath, new Uint8Array(jpgBuffer), {
+        contentType: 'image/jpeg',
         upsert: true,
       })
 
       const { data: urlData } = admin.storage.from('carnets').getPublicUrl(storagePath)
 
+      // Actualizar BD con URL del JPG
       await admin.from('carnets').upsert(
         {
           socio_id: socio.id,
@@ -59,6 +56,9 @@ export async function POST() {
         },
         { onConflict: 'socio_id,anio_vigencia' },
       )
+
+      // Borrar PDF antiguo si existe
+      await admin.storage.from('carnets').remove([`${socio.id}/${anio}.pdf`])
 
       generados++
     } catch (e) {
