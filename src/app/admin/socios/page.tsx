@@ -89,7 +89,7 @@ export default async function SociosAdminPage({ searchParams }: Props) {
     query = query.or(`apellidos.ilike.%${q}%,nombre.ilike.%${q}%,email_principal.ilike.%${q}%,dni.ilike.%${q}%`)
   }
 
-  let { data: socios } = await query.limit(200)
+  let { data: socios } = await query.limit(500)
 
   // Cuando se muestran tipos mixtos y se ordena por Nº, reordenar en JS
   if (sortCol === 'num' && !searchParams.tipo && socios) {

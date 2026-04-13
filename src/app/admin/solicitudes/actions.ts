@@ -10,11 +10,19 @@ export async function aprobarSolicitud(id: number): Promise<{ error?: string }> 
   // Obtener el socio pendiente
   const { data: socio } = await db
     .from('socios')
-    .select('tipo, email_uma, email_otros')
+    .select('tipo, email_uma, email_otros, notas')
     .eq('id', id)
     .single()
 
   if (!socio) return { error: 'Solicitud no encontrada' }
+
+  // Avisar si un cooperante no tiene avalistas registrados
+  if (socio.tipo === 'cooperante') {
+    const tieneAvalistas = (socio.notas ?? '').includes('AVALISTAS:')
+    if (!tieneAvalistas) {
+      return { error: 'Este cooperante no tiene avalistas registrados en su solicitud.' }
+    }
+  }
 
   const updateData: Record<string, unknown> = {
     estado: 'activo',
