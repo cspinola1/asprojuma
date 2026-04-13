@@ -2,7 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
-import { enviarEmailRechazoSolicitud, enviarEmailAvalistaCooperante } from '@/lib/email'
+import { enviarEmailRechazoSolicitud, enviarEmailAvalistaCooperante, enviarEmailAprobacionSolicitud } from '@/lib/email'
 
 export async function aprobarSolicitud(id: number): Promise<{ error?: string }> {
   const db = createAdminClient()
@@ -10,7 +10,7 @@ export async function aprobarSolicitud(id: number): Promise<{ error?: string }> 
   // Obtener el socio pendiente
   const { data: socio } = await db
     .from('socios')
-    .select('tipo, email_uma, email_otros, notas')
+    .select('tipo, nombre, apellidos, email_uma, email_otros, notas')
     .eq('id', id)
     .single()
 
@@ -70,16 +70,18 @@ export async function aprobarSolicitud(id: number): Promise<{ error?: string }> 
 
   if (error) return { error: error.message }
 
-  // Enviar email de bienvenida / acceso al portal
-  const emailInvite = socio.email_uma || socio.email_otros
-  if (emailInvite) {
+  // Enviar email de aprobación al socio
+  const emailAprobacion = socio.email_uma || socio.email_otros
+  if (emailAprobacion) {
     try {
-      const admin = createAdminClient()
-      await admin.auth.admin.inviteUserByEmail(emailInvite, {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm`,
-      })
-    } catch {
-      // No bloquear si falla el email
+      await enviarEmailAprobacionSolicitud(
+        emailAprobacion,
+        socio.nombre ?? '',
+        socio.apellidos ?? '',
+        process.env.NEXT_PUBLIC_APP_URL ?? 'https://asprojuma.es',
+      )
+    } catch (e) {
+      console.error('Error enviando email de aprobacion', emailAprobacion, e)
     }
   }
 

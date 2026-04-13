@@ -95,6 +95,49 @@ export async function enviarConfirmacionInvitadoActividad(
   })
 }
 
+export async function enviarEmailAprobacionSolicitud(
+  email: string,
+  nombre: string,
+  apellidos: string,
+  appUrl: string,
+) {
+  await getResend().emails.send({
+    from: FROM,
+    to: email,
+    subject: 'ASPROJUMA — Tu solicitud ha sido aprobada',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #1f2937;">
+        ${HEADER}
+        <div style="background: #f9fafb; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+          <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
+            Estimado/a <strong>${nombre} ${apellidos}</strong>,
+          </p>
+          <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
+            Nos complace comunicarte que tu solicitud de admisión como socio/a de ASPROJUMA
+            ha sido <strong>aprobada</strong> por la Junta Directiva.
+          </p>
+          <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
+            Ya puedes acceder al portal del socio. El administrador te enviará en breve
+            una invitación de acceso por separado para que establezcas tu contraseña.
+          </p>
+          <div style="text-align: center; margin: 28px 0;">
+            <a href="${appUrl}/login"
+               style="background: #1e3a5f; color: white; padding: 12px 28px; border-radius: 8px;
+                      text-decoration: none; font-size: 14px; font-weight: bold;">
+              Acceder al portal
+            </a>
+          </div>
+          <p style="color: #9ca3af; font-size: 12px; margin-top: 24px;">
+            Si tienes alguna duda, escríbenos a
+            <a href="mailto:asprojuma@uma.es" style="color: #1e3a5f;">asprojuma@uma.es</a>.
+          </p>
+          ${FOOTER}
+        </div>
+      </div>
+    `,
+  })
+}
+
 export async function enviarEmailAvalistaCooperante(
   emailAvalista: string,
   nombreCooperante: string,
