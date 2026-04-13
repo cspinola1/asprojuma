@@ -23,7 +23,7 @@ export default async function ActividadDetallePage({ params }: { params: { id: s
   if (!actividad) notFound()
 
   const { data: socios } = user
-    ? await admin.from('socios').select('id, estado')
+    ? await admin.from('socios').select('id, nombre, apellidos, estado')
         .or(`email_uma.ilike.${user.email},email_otros.ilike.${user.email}`)
         .order('id', { ascending: true }).limit(1)
     : { data: [] }
@@ -47,20 +47,6 @@ export default async function ActividadDetallePage({ params }: { params: { id: s
         .neq('estado', 'cancelado')
     : { data: [] }
 
-  // Lista de inscritos
-  const { data: inscritos } = await admin
-    .from('actividades_inscripciones')
-    .select('socios(nombre, apellidos, tipo)')
-    .eq('actividad_id', actividad.id)
-    .in('estado', ['inscrito', 'pagado'])
-    .order('fecha_inscripcion')
-
-  const { data: invitadosInscritos } = await admin
-    .from('actividades_invitados')
-    .select('nombre')
-    .eq('actividad_id', actividad.id)
-    .in('estado', ['inscrito', 'pagado'])
-    .order('fecha_inscripcion')
 
   // Plazas disponibles contando socios + invitados activos
   let plazasDisponibles: number | null = null
@@ -170,23 +156,21 @@ export default async function ActividadDetallePage({ params }: { params: { id: s
             hora_fin={actividad.hora_fin}
           />
 
-          {/* Lista de inscritos */}
-          {((inscritos ?? []).length > 0 || (invitadosInscritos ?? []).length > 0) && (
+          {/* Mi inscripción y mis invitados */}
+          {inscritoActivo && socio && (
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">
-                Inscritos ({(inscritos ?? []).length + (invitadosInscritos ?? []).length} personas)
+                Mi inscripción ({1 + (misInvitados ?? []).length} {1 + (misInvitados ?? []).length === 1 ? 'persona' : 'personas'})
               </p>
               <div className="space-y-1">
-                {(inscritos ?? []).map((i, idx) => {
-                  const s = i.socios as unknown as { nombre: string | null; apellidos: string | null } | null
-                  return (
-                    <p key={idx} className="text-sm text-gray-700">
-                      {s?.apellidos}, {s?.nombre}
-                    </p>
-                  )
-                })}
-                {(invitadosInscritos ?? []).map((inv, idx) => (
-                  <p key={`inv-${idx}`} className="text-sm text-gray-500 italic">{inv.nombre} <span className="text-xs">(invitado)</span></p>
+                <p className="text-sm text-gray-700">
+                  {(socio as unknown as { apellidos: string | null; nombre: string | null }).apellidos},{' '}
+                  {(socio as unknown as { apellidos: string | null; nombre: string | null }).nombre}
+                </p>
+                {(misInvitados ?? []).map((inv) => (
+                  <p key={inv.id} className="text-sm text-gray-500 italic">
+                    {inv.nombre} <span className="text-xs">(invitado)</span>
+                  </p>
                 ))}
               </div>
             </div>
