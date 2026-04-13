@@ -53,7 +53,7 @@ export default function CarnetesAdminPage() {
           Generación en lote
         </h2>
         <p className="text-sm text-gray-600 mb-4">
-          Se generarán los PDFs de carnet para todos los socios con estado <strong>Activo</strong>,{' '}
+          Se generarán los carnets en formato JPG para todos los socios con estado <strong>Activo</strong>,{' '}
           <strong>Exento</strong> u <strong>Honorario</strong> y se guardarán en el almacenamiento.
           Los socios podrán descargarlos desde su área privada.
         </p>
