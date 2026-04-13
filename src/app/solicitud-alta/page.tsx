@@ -47,14 +47,14 @@ export default function SolicitudAltaPage() {
           >
             <div className="text-4xl mb-4">🤝</div>
             <h3 className="text-xl font-bold text-blue-900 group-hover:text-blue-700">
-              Miembro Cooperante
+              Socio Cooperante
             </h3>
             <p className="text-sm text-gray-500 mt-2">
               Para familiares y personas vinculadas a la UMA. Requiere el aval de dos socios profesores.
             </p>
             <ul className="mt-4 space-y-1 text-sm text-gray-500">
               <li>✓ Acceso a actividades</li>
-              <li>✓ Carnet digital de miembro</li>
+              <li>✓ Carnet digital de socio</li>
               <li>✓ Aval de dos profesores socios</li>
             </ul>
             <div className="mt-6 text-blue-700 font-medium text-sm group-hover:underline">

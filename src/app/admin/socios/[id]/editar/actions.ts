@@ -45,7 +45,7 @@ async function checkEmailDuplicado(admin: ReturnType<typeof createAdminClient>, 
   const { data } = await admin
     .from('socios')
     .select('id, nombre, apellidos')
-    .or(`email_uma.eq.${email},email_otros.eq.${email}`)
+    .or(`email_uma.ilike.${email},email_otros.ilike.${email}`)
     .neq('id', excludeId)
     .limit(1)
   return data?.[0] ?? null

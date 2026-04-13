@@ -32,7 +32,7 @@ export async function actualizarPerfil(data: PerfilFormData): Promise<{ error?: 
       titular_cuenta: data.titular_cuenta || null,
       updated_at: new Date().toISOString(),
     })
-    .or(`email_uma.eq.${user.email},email_otros.eq.${user.email}`)
+    .or(`email_uma.ilike.${user.email},email_otros.ilike.${user.email}`)
 
   if (error) return { error: error.message }
 

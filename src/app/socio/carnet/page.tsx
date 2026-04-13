@@ -90,7 +90,7 @@ export default async function CarnetPage() {
   const { data: socios } = await admin
     .from('socios')
     .select('*')
-    .or(`email_uma.eq.${user.email},email_otros.eq.${user.email}`)
+    .or(`email_uma.ilike.${user.email},email_otros.ilike.${user.email}`)
     .order('id', { ascending: true })
     .limit(1)
   const socio = socios?.[0] ?? null

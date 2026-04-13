@@ -24,7 +24,7 @@ export default async function ActividadDetallePage({ params }: { params: { id: s
 
   const { data: socios } = user
     ? await admin.from('socios').select('id, estado')
-        .or(`email_uma.eq.${user.email},email_otros.eq.${user.email}`)
+        .or(`email_uma.ilike.${user.email},email_otros.ilike.${user.email}`)
         .order('id', { ascending: true }).limit(1)
     : { data: [] }
   const socio = socios?.[0] ?? null

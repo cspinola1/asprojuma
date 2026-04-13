@@ -14,7 +14,7 @@ export default async function PerfilPage() {
   const { data: socios } = await admin
     .from('socios')
     .select('*, socios_profesores(centro, departamento, area_conocimiento, fecha_jubilacion, categoria)')
-    .or(`email_uma.eq.${user.email},email_otros.eq.${user.email}`)
+    .or(`email_uma.ilike.${user.email},email_otros.ilike.${user.email}`)
     .order('id', { ascending: true })
     .limit(1)
   const socio = socios?.[0] ?? null
@@ -37,7 +37,7 @@ export default async function PerfilPage() {
           <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-sm text-yellow-800">
             <p className="font-medium mb-1">No se encontró tu ficha de socio</p>
             <p>El email con el que accedes ({user.email}) no coincide con ningún socio registrado.
-              Contacta con la secretaría en <a href="mailto:asprojuma@uma.es" className="underline">asprojuma@una.es</a>.</p>
+              Contacta con la secretaría en <a href="mailto:asprojuma@uma.es" className="underline">asprojuma@uma.es</a>.</p>
           </div>
         ) : (
           <ProfileForm socio={socio as Socio} profesorData={(socio as Socio & { socios_profesores: SocioProfesor | null }).socios_profesores ?? null} />
