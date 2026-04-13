@@ -95,6 +95,46 @@ export async function enviarConfirmacionInvitadoActividad(
   })
 }
 
+export async function enviarEmailAvalistaCooperante(
+  emailAvalista: string,
+  nombreCooperante: string,
+  apellidosCooperante: string,
+) {
+  await getResend().emails.send({
+    from: FROM,
+    to: emailAvalista,
+    subject: 'ASPROJUMA — Solicitud de aval para nuevo cooperante',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #1f2937;">
+        ${HEADER}
+        <div style="background: #f9fafb; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+          <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
+            Estimado/a socio/a,
+          </p>
+          <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
+            <strong>${nombreCooperante} ${apellidosCooperante}</strong> ha solicitado el alta como
+            <strong>Miembro Cooperante</strong> de ASPROJUMA y le ha indicado como avalista.
+          </p>
+          <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
+            Si desea confirmar su aval, por favor conteste a este correo o póngase en contacto con
+            la secretaría de la asociación en
+            <a href="mailto:asprojuma@uma.es" style="color: #1e3a5f;">asprojuma@uma.es</a>.
+          </p>
+          <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
+            La solicitud quedará pendiente de aprobación por la Junta Directiva hasta recibir
+            la confirmación de los dos avalistas.
+          </p>
+          <p style="color: #9ca3af; font-size: 12px; margin-top: 24px;">
+            Si no conoce a esta persona o no desea avalarla, puede ignorar este mensaje
+            o escribirnos a <a href="mailto:asprojuma@uma.es" style="color: #1e3a5f;">asprojuma@uma.es</a>.
+          </p>
+          ${FOOTER}
+        </div>
+      </div>
+    `,
+  })
+}
+
 export async function enviarEmailRechazoSolicitud(
   email: string,
   nombre: string,

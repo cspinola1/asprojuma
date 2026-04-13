@@ -1,7 +1,8 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
-import { enviarEmailRecepcionSolicitud } from '@/lib/email'
+import { revalidatePath } from 'next/cache'
+import { enviarEmailRecepcionSolicitud, enviarEmailAvalistaCooperante } from '@/lib/email'
 
 export interface SolicitudCoopenanteData {
   // Personales
@@ -106,7 +107,7 @@ export async function enviarSolicitudCooperante(
     return { error: errorCoop.message }
   }
 
-  // Enviar email de confirmación de recepción
+  // Enviar email de confirmación de recepción al cooperante
   const emailDestino = data.email_otros.trim()
   if (emailDestino) {
     try {
@@ -114,5 +115,15 @@ export async function enviarSolicitudCooperante(
     } catch { /* No bloquear si falla el email */ }
   }
 
+  // Enviar email a los dos avalistas
+  for (const emailAvalista of [data.avalista1_email.trim(), data.avalista2_email.trim()]) {
+    if (emailAvalista) {
+      try {
+        await enviarEmailAvalistaCooperante(emailAvalista, data.nombre.trim(), data.apellidos.trim())
+      } catch { /* No bloquear si falla el email */ }
+    }
+  }
+
+  revalidatePath('/admin/solicitudes')
   return { ok: true }
 }
