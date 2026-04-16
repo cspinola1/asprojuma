@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
-import { enviarConfirmacionInvitadoActividad } from '@/lib/email'
+import { enviarConfirmacionInvitadoActividad, enviarConfirmacionInscripcionActividad } from '@/lib/email'
 
 interface InvitadoInput {
   nombre: string
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
   const { data: socios } = await admin
     .from('socios')
-    .select('id, estado')
+    .select('id, estado, nombre, apellidos, email_uma, email_otros, email_principal')
     .or(`email_uma.ilike.${user.email},email_otros.ilike.${user.email}`)
     .order('id', { ascending: true })
     .limit(1)
@@ -145,6 +145,25 @@ export async function POST(request: NextRequest) {
       { onConflict: 'actividad_id,socio_id' }
     )
   if (errIns) return NextResponse.json({ error: errIns.message }, { status: 500 })
+
+  // Email de confirmación al socio
+  const emailSocio = socio.email_principal ?? socio.email_uma ?? socio.email_otros
+  if (emailSocio) {
+    const fecha = new Date(actividad.fecha_inicio + 'T00:00:00').toLocaleDateString('es-ES', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    })
+    try {
+      await enviarConfirmacionInscripcionActividad(
+        emailSocio,
+        socio.nombre ?? '',
+        socio.apellidos ?? '',
+        actividad.titulo,
+        fecha,
+        actividad.lugar,
+        actividad.precio ?? 0,
+      )
+    } catch { /* no bloquear si falla el email */ }
+  }
 
   // Crear invitados
   if (invitados.length > 0) {
