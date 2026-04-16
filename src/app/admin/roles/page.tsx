@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-type Rol = 'tesorero' | 'secretario' | 'junta' | 'presidente' | 'admin'
+type Rol = 'tesorero' | 'secretario' | 'junta' | 'presidente' | 'actividades' | 'admin'
 
 interface AdminRol {
   id: number
@@ -16,15 +16,17 @@ const ROLES: { value: Rol; label: string }[] = [
   { value: 'secretario', label: 'Secretario' },
   { value: 'junta', label: 'Junta' },
   { value: 'presidente', label: 'Presidente' },
+  { value: 'actividades', label: 'Actividades' },
   { value: 'admin', label: 'Admin' },
 ]
 
 const PERMISOS_LABEL: Record<string, string[]> = {
-  tesorero:    ['Dashboard', 'Socios', 'Solicitudes', 'Cuotas', 'Carnets', 'Remesas'],
-  secretario:  ['Dashboard', 'Socios', 'Solicitudes', 'Editar socios'],
-  junta:       ['Dashboard', 'Socios', 'Solicitudes', 'Actividades'],
-  presidente:  ['Dashboard', 'Socios', 'Solicitudes', 'Cuotas', 'Carnets', 'Remesas', 'Editar socios', 'Actividades'],
-  admin:       ['Todo'],
+  tesorero:     ['Dashboard', 'Socios', 'Solicitudes', 'Cuotas', 'Carnets', 'Remesas'],
+  secretario:   ['Dashboard', 'Socios', 'Solicitudes', 'Editar socios'],
+  junta:        ['Dashboard', 'Socios', 'Solicitudes', 'Actividades'],
+  presidente:   ['Dashboard', 'Socios', 'Solicitudes', 'Cuotas', 'Carnets', 'Remesas', 'Editar socios', 'Actividades'],
+  actividades:  ['Dashboard', 'Socios', 'Actividades'],
+  admin:        ['Todo'],
 }
 
 export default function RolesPage() {
@@ -174,15 +176,15 @@ export default function RolesPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {[
-                { label: 'Dashboard', permisos: ['tesorero','secretario','junta','presidente','admin'] },
-                { label: 'Ver socios', permisos: ['tesorero','secretario','junta','presidente','admin'] },
-                { label: 'Solicitudes', permisos: ['tesorero','secretario','junta','presidente','admin'] },
-                { label: 'Cuotas', permisos: ['tesorero','presidente','admin'] },
-                { label: 'Carnets', permisos: ['tesorero','presidente','admin'] },
-                { label: 'Remesas', permisos: ['tesorero','presidente','admin'] },
-                { label: 'Editar/eliminar socio', permisos: ['secretario','presidente','admin'] },
-                { label: 'Actividades', permisos: ['junta','presidente','admin'] },
-                { label: 'Gestión de roles', permisos: ['admin'] },
+                { label: 'Dashboard',            permisos: ['tesorero','secretario','junta','presidente','actividades','admin'] },
+                { label: 'Ver socios',           permisos: ['tesorero','secretario','junta','presidente','actividades','admin'] },
+                { label: 'Solicitudes',          permisos: ['tesorero','secretario','junta','presidente','admin'] },
+                { label: 'Cuotas',               permisos: ['tesorero','presidente','admin'] },
+                { label: 'Carnets',              permisos: ['tesorero','presidente','admin'] },
+                { label: 'Remesas',              permisos: ['tesorero','presidente','admin'] },
+                { label: 'Editar/eliminar socio',permisos: ['secretario','presidente','admin'] },
+                { label: 'Actividades',          permisos: ['junta','presidente','actividades','admin'] },
+                { label: 'Gestión de roles',     permisos: ['admin'] },
               ].map(row => (
                 <tr key={row.label} className="hover:bg-gray-50">
                   <td className="px-4 py-2 text-gray-700">{row.label}</td>

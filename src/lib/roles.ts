@@ -1,19 +1,19 @@
 import { createAdminClient } from './supabase/admin'
 import { User } from '@supabase/supabase-js'
 
-export type Rol = 'tesorero' | 'secretario' | 'junta' | 'presidente' | 'admin'
+export type Rol = 'tesorero' | 'secretario' | 'junta' | 'presidente' | 'actividades' | 'admin'
 
-export const ROLES: Rol[] = ['tesorero', 'secretario', 'junta', 'presidente', 'admin']
+export const ROLES: Rol[] = ['tesorero', 'secretario', 'junta', 'presidente', 'actividades', 'admin']
 
 export const PERMISOS: Record<string, Rol[]> = {
-  dashboard:    ['tesorero', 'secretario', 'junta', 'presidente', 'admin'],
-  socios:       ['tesorero', 'secretario', 'junta', 'presidente', 'admin'],
+  dashboard:    ['tesorero', 'secretario', 'junta', 'presidente', 'actividades', 'admin'],
+  socios:       ['tesorero', 'secretario', 'junta', 'presidente', 'actividades', 'admin'],
   solicitudes:  ['tesorero', 'secretario', 'junta', 'presidente', 'admin'],
   cuotas:       ['tesorero', 'presidente', 'admin'],
   remesas:      ['tesorero', 'presidente', 'admin'],
   carnets:      ['tesorero', 'secretario', 'presidente', 'admin'],
   editar_socio: ['secretario', 'presidente', 'admin'],
-  actividades:  ['junta', 'presidente', 'admin'],
+  actividades:  ['junta', 'presidente', 'actividades', 'admin'],
   roles:        ['admin'],
 }
 

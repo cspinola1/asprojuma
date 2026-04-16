@@ -19,6 +19,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     secretario: 'Secretario',
     junta: 'Junta',
     presidente: 'Presidente',
+    actividades: 'Actividades',
     admin: 'Admin',
   }
 
