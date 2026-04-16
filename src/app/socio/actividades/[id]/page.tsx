@@ -139,8 +139,9 @@ export default async function ActividadDetallePage({ params }: { params: { id: s
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
               <p className="text-sm font-semibold text-amber-900 mb-1">Pago pendiente</p>
               <p className="text-sm text-amber-800">
-                Realiza una transferencia indicando tu nombre y la actividad a la cuenta de ASPROJUMA.
-                Una vez confirmado el pago, recibirás la confirmación definitiva.
+                Recibirás un email con los datos bancarios de ASPROJUMA para realizar la transferencia.
+                Indica en el concepto tu nombre y el título de la actividad.
+                Una vez confirmado el pago, recibirás la confirmación definitiva de tu inscripción.
               </p>
             </div>
           )}
