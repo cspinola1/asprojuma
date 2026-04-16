@@ -91,15 +91,13 @@ export async function POST(request: NextRequest) {
     const { error: errInv } = await admin.from('actividades_invitados').insert(registros)
     if (errInv) return NextResponse.json({ error: errInv.message }, { status: 500 })
 
-    if (precioInv === 0) {
-      const fecha = new Date(actividad.fecha_inicio + 'T00:00:00').toLocaleDateString('es-ES', {
-        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-      })
-      for (const inv of invitados) {
-        if (inv.email) {
-          try { await enviarConfirmacionInvitadoActividad(inv.email, inv.nombre, actividad.titulo, fecha, actividad.lugar, false) }
-          catch { /* no bloquear */ }
-        }
+    const fecha = new Date(actividad.fecha_inicio + 'T00:00:00').toLocaleDateString('es-ES', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    })
+    for (const inv of invitados) {
+      if (inv.email) {
+        try { await enviarConfirmacionInvitadoActividad(inv.email, inv.nombre, actividad.titulo, fecha, actividad.lugar, false, precioInv) }
+        catch { /* no bloquear */ }
       }
     }
     return NextResponse.json({ ok: true })
@@ -179,19 +177,18 @@ export async function POST(request: NextRequest) {
     const { error: errInv } = await admin.from('actividades_invitados').insert(registros)
     if (errInv) return NextResponse.json({ error: errInv.message }, { status: 500 })
 
-    // Si la actividad es gratuita, enviar confirmación inmediata a invitados con email
-    if ((actividad.precio_invitado ?? actividad.precio) === 0) {
-      const fecha = new Date(actividad.fecha_inicio + 'T00:00:00').toLocaleDateString('es-ES', {
-        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-      })
-      for (const inv of invitados) {
-        if (inv.email) {
-          try {
-            await enviarConfirmacionInvitadoActividad(
-              inv.email, inv.nombre, actividad.titulo, fecha, actividad.lugar, false
-            )
-          } catch { /* no bloquear si falla el email */ }
-        }
+    // Enviar email a invitados (siempre, con o sin precio)
+    const precioEmailInv = actividad.precio_invitado ?? actividad.precio
+    const fechaInv = new Date(actividad.fecha_inicio + 'T00:00:00').toLocaleDateString('es-ES', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    })
+    for (const inv of invitados) {
+      if (inv.email) {
+        try {
+          await enviarConfirmacionInvitadoActividad(
+            inv.email, inv.nombre, actividad.titulo, fechaInv, actividad.lugar, false, precioEmailInv
+          )
+        } catch { /* no bloquear si falla el email */ }
       }
     }
   }

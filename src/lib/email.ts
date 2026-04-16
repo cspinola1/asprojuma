@@ -134,11 +134,49 @@ export async function enviarConfirmacionInvitadoActividad(
   fechaActividad: string,
   lugarActividad: string | null,
   pagado: boolean,
+  precio: number = 0,
 ) {
+  const iban = process.env.ASPROJUMA_IBAN ?? ''
+  const titular = process.env.ASPROJUMA_TITULAR ?? 'ASPROJUMA'
+
+  const bloquePago = pagado ? `
+    <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 12px 16px; margin: 16px 0;">
+      <p style="margin: 0; font-size: 14px; color: #166534;">✅ Inscripción confirmada y abonada</p>
+    </div>
+  ` : precio > 0 ? `
+    <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 16px; margin: 16px 0;">
+      <p style="margin: 0 0 8px; font-size: 14px; font-weight: bold; color: #92400e;">💳 Pago pendiente: ${precio.toFixed(2)} €</p>
+      <p style="margin: 0 0 6px; font-size: 13px; color: #78350f;">
+        Realiza una transferencia bancaria indicando en el concepto tu nombre y el título de la actividad:
+      </p>
+      <table style="width: 100%; font-size: 13px; color: #374151; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 4px 0; font-weight: bold; width: 90px;">Titular:</td>
+          <td style="padding: 4px 0;">${titular}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; font-weight: bold;">IBAN:</td>
+          <td style="padding: 4px 0; font-family: monospace;">${iban}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; font-weight: bold;">Concepto:</td>
+          <td style="padding: 4px 0;">${nombre} — ${tituloActividad}</td>
+        </tr>
+      </table>
+      <p style="margin: 10px 0 0; font-size: 12px; color: #92400e;">
+        Una vez confirmado el pago, recibirás la confirmación definitiva de tu inscripción.
+      </p>
+    </div>
+  ` : `
+    <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 12px 16px; margin: 16px 0;">
+      <p style="margin: 0; font-size: 14px; color: #166534;">✅ Inscripción confirmada — actividad gratuita</p>
+    </div>
+  `
+
   await getResend().emails.send({
     from: FROM,
     to: email,
-    subject: `ASPROJUMA — Confirmación de inscripción: ${tituloActividad}`,
+    subject: `ASPROJUMA — Inscripción en: ${tituloActividad}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #1f2937;">
         ${HEADER}
@@ -147,16 +185,14 @@ export async function enviarConfirmacionInvitadoActividad(
             Estimado/a <strong>${nombre}</strong>,
           </p>
           <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
-            ${pagado
-              ? 'Tu inscripción en la siguiente actividad ha sido <strong>confirmada y abonada</strong>:'
-              : 'Has sido inscrito/a en la siguiente actividad de ASPROJUMA:'
-            }
+            Has sido inscrito/a en la siguiente actividad de ASPROJUMA:
           </p>
           <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px; margin: 16px 0;">
             <p style="margin: 0 0 6px; font-size: 16px; font-weight: bold; color: #1e3a5f;">${tituloActividad}</p>
             <p style="margin: 0 0 4px; font-size: 13px; color: #374151;">📅 ${fechaActividad}</p>
             ${lugarActividad ? `<p style="margin: 0; font-size: 13px; color: #374151;">📍 ${lugarActividad}</p>` : ''}
           </div>
+          ${bloquePago}
           <p style="color: #9ca3af; font-size: 12px; margin-top: 24px;">
             Para cualquier consulta, contacta con nosotros en
             <a href="mailto:asprojuma@uma.es" style="color: #1e3a5f;">asprojuma@uma.es</a>.
