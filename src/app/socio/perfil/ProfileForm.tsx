@@ -14,16 +14,16 @@ function Campo({ label, valor }: { label: string; valor?: string | null }) {
 }
 
 function InputField({
-  label, name, value, onChange, placeholder,
+  label, name, value, onChange, placeholder, type = 'text',
 }: {
   label: string; name: string; value: string
-  onChange: (v: string) => void; placeholder?: string
+  onChange: (v: string) => void; placeholder?: string; type?: string
 }) {
   return (
     <div>
       <label className="block text-xs text-gray-500 uppercase tracking-wide mb-1">{label}</label>
       <input
-        type="text"
+        type={type}
         name={name}
         value={value}
         onChange={e => onChange(e.target.value)}
@@ -40,16 +40,23 @@ export default function ProfileForm({ socio, profesorData }: { socio: Socio; pro
   const [exito, setExito] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
-  const [form, setForm] = useState<PerfilFormData>({
+  const initialForm: PerfilFormData = {
     tel_movil: socio.tel_movil ?? '',
     tel_fijo: socio.tel_fijo ?? '',
     direccion: socio.direccion ?? '',
     codigo_postal: socio.codigo_postal ?? '',
     localidad: socio.localidad ?? '',
     provincia: socio.provincia ?? '',
-    iban: socio.iban ?? '',
-    titular_cuenta: socio.titular_cuenta ?? '',
-  })
+    email_uma: socio.email_uma ?? '',
+    email_otros: socio.email_otros ?? '',
+    centro: profesorData?.centro ?? '',
+    departamento: profesorData?.departamento ?? '',
+    area_conocimiento: profesorData?.area_conocimiento ?? '',
+    fecha_jubilacion: profesorData?.fecha_jubilacion ?? '',
+    categoria: profesorData?.categoria ?? '',
+  }
+
+  const [form, setForm] = useState<PerfilFormData>(initialForm)
 
   const set = (field: keyof PerfilFormData) => (v: string) =>
     setForm(prev => ({ ...prev, [field]: v }))
@@ -102,7 +109,7 @@ export default function ProfileForm({ socio, profesorData }: { socio: Socio; pro
         </div>
       )}
 
-      {/* Datos de solo lectura */}
+      {/* Datos personales — siempre solo lectura */}
       <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
         <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Datos personales</h2>
         <dl className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -114,33 +121,52 @@ export default function ProfileForm({ socio, profesorData }: { socio: Socio; pro
         <p className="mt-4 text-xs text-gray-400">Para modificar estos datos, contacta con la secretaría.</p>
       </section>
 
-      <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Emails</h2>
-        <dl className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <Campo label="Email UMA" valor={socio.email_uma} />
-          <Campo label="Otros emails" valor={socio.email_otros} />
-          <Campo label="Email principal" valor={socio.email_principal} />
-        </dl>
-      </section>
-
-      {/* Datos académicos (solo profesores) */}
-      {socio.tipo === 'profesor' && profesorData && (
-        <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Datos académicos</h2>
-          <dl className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <Campo label="Centro / Facultad" valor={profesorData.centro} />
-            <Campo label="Departamento" valor={profesorData.departamento} />
-            <Campo label="Área de conocimiento" valor={profesorData.area_conocimiento} />
-            <Campo label="Fecha de jubilación" valor={profesorData.fecha_jubilacion} />
-            <Campo label="Categoría" valor={profesorData.categoria} />
-          </dl>
-          <p className="mt-4 text-xs text-gray-400">Para modificar estos datos, contacta con la secretaría.</p>
-        </section>
-      )}
-
-      {/* Datos editables */}
+      {/* Formulario con datos editables */}
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
+
+          {/* Emails */}
+          <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Emails</h2>
+            {editando ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InputField label="Email UMA" name="email_uma" value={form.email_uma} onChange={set('email_uma')} placeholder="usuario@uma.es" type="email" />
+                <InputField label="Otros emails" name="email_otros" value={form.email_otros} onChange={set('email_otros')} placeholder="correo@gmail.com" type="email" />
+              </div>
+            ) : (
+              <dl className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <Campo label="Email UMA" valor={socio.email_uma} />
+                <Campo label="Otros emails" valor={socio.email_otros} />
+                <Campo label="Email principal" valor={socio.email_principal} />
+              </dl>
+            )}
+          </section>
+
+          {/* Datos académicos (solo profesores) */}
+          {socio.tipo === 'profesor' && (
+            <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Datos académicos</h2>
+              {editando ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <InputField label="Centro / Facultad" name="centro" value={form.centro} onChange={set('centro')} />
+                  <InputField label="Departamento" name="departamento" value={form.departamento} onChange={set('departamento')} />
+                  <InputField label="Área de conocimiento" name="area_conocimiento" value={form.area_conocimiento} onChange={set('area_conocimiento')} />
+                  <InputField label="Fecha de jubilación" name="fecha_jubilacion" value={form.fecha_jubilacion} onChange={set('fecha_jubilacion')} placeholder="YYYY-MM-DD" type="date" />
+                  <InputField label="Categoría" name="categoria" value={form.categoria} onChange={set('categoria')} />
+                </div>
+              ) : (
+                <dl className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <Campo label="Centro / Facultad" valor={profesorData?.centro} />
+                  <Campo label="Departamento" valor={profesorData?.departamento} />
+                  <Campo label="Área de conocimiento" valor={profesorData?.area_conocimiento} />
+                  <Campo label="Fecha de jubilación" valor={profesorData?.fecha_jubilacion} />
+                  <Campo label="Categoría" valor={profesorData?.categoria} />
+                </dl>
+              )}
+            </section>
+          )}
+
+          {/* Teléfonos */}
           <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
             <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Teléfonos</h2>
             {editando ? (
@@ -156,6 +182,7 @@ export default function ProfileForm({ socio, profesorData }: { socio: Socio; pro
             )}
           </section>
 
+          {/* Dirección */}
           <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
             <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Dirección</h2>
             {editando ? (
@@ -177,19 +204,14 @@ export default function ProfileForm({ socio, profesorData }: { socio: Socio; pro
             )}
           </section>
 
+          {/* Domiciliación bancaria — siempre solo lectura */}
           <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
             <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Domiciliación bancaria</h2>
-            {editando ? (
-              <div className="grid grid-cols-2 gap-4">
-                <InputField label="IBAN" name="iban" value={form.iban} onChange={set('iban')} placeholder="ES00 0000 0000 0000 0000 0000" />
-                <InputField label="Titular de la cuenta" name="titular_cuenta" value={form.titular_cuenta} onChange={set('titular_cuenta')} />
-              </div>
-            ) : (
-              <dl className="grid grid-cols-2 gap-4">
-                <Campo label="IBAN" valor={socio.iban} />
-                <Campo label="Titular de la cuenta" valor={socio.titular_cuenta} />
-              </dl>
-            )}
+            <dl className="grid grid-cols-2 gap-4">
+              <Campo label="IBAN" valor={socio.iban} />
+              <Campo label="Titular de la cuenta" valor={socio.titular_cuenta} />
+            </dl>
+            <p className="mt-4 text-xs text-gray-400">Para modificar estos datos, contacta con la secretaría.</p>
           </section>
 
           {editando && (
@@ -203,19 +225,7 @@ export default function ProfileForm({ socio, profesorData }: { socio: Socio; pro
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setEditando(false)
-                  setForm({
-                    tel_movil: socio.tel_movil ?? '',
-                    tel_fijo: socio.tel_fijo ?? '',
-                    direccion: socio.direccion ?? '',
-                    codigo_postal: socio.codigo_postal ?? '',
-                    localidad: socio.localidad ?? '',
-                    provincia: socio.provincia ?? '',
-                    iban: socio.iban ?? '',
-                    titular_cuenta: socio.titular_cuenta ?? '',
-                  })
-                }}
+                onClick={() => { setEditando(false); setForm(initialForm) }}
                 className="px-5 py-2.5 rounded-lg text-sm border border-gray-300 hover:bg-gray-50 transition"
               >
                 Cancelar
