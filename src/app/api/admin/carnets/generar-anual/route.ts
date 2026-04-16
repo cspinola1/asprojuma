@@ -21,8 +21,8 @@ export async function POST() {
     .from('socios')
     .select('id, nombre, apellidos, dni, tipo, num_socio, num_cooperante')
     .in('estado', ['activo', 'activo_exento', 'honorario'])
-    .not('num_socio', 'is', null)
-    .order('num_socio', { ascending: true })
+    .or('num_socio.not.is.null,num_cooperante.not.is.null')
+    .order('num_socio', { ascending: true, nullsFirst: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!socios?.length) return NextResponse.json({ generados: 0, errores: [] })
