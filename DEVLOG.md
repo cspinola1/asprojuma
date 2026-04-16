@@ -5,6 +5,89 @@ Cada entrada incluye fecha, hora y descripción detallada de lo hecho.
 
 ---
 
+## 2026-04-16 — Carnets JPG masivos, roles, emails actividades y fixes
+
+### 10:00 — Fixes UX y textos
+
+- **"Miembro Cooperante" → "Socio Cooperante"** en página `/solicitud-alta`
+- **Fix typo** `asprojuma@una.es` → `asprojuma@uma.es` en mensaje de error del perfil
+- **Búsqueda emails case-insensitive**: cambiado `.eq` por `.ilike` en 8 ficheros del área socio para evitar fallos por diferencia de mayúsculas entre BD y login
+
+### 11:00 — Carnets: migración completa a JPG y envío masivo
+
+- **`lib/carnet-jpg.ts`** creado: función compartida `generarCarnetJPG()` extraída del API individual
+- **`api/admin/carnets/generar-anual`**: migrado a JPG, borra `.pdf` antiguo del Storage tras subir `.jpg`
+- **`api/admin/enviar-carnet`**: migrado a JPG, adjunta como `.jpg` en email
+- **`api/carnet/route.tsx`**: simplificado usando `generarCarnetJPG()` compartida
+- **Fix**: el filtro `.not('num_socio', 'is', null)` excluía cooperantes — corregido con `.or('num_socio.not.is.null,num_cooperante.not.is.null')`
+- **`api/admin/carnets/enviar-masivo`** creado: envío masivo por email de todos los carnets con `enviado_email=false`
+- **Página `admin/carnets`** reorganizada en 2 pasos: Paso 1 Generar → Paso 2 Enviar
+- **Generación ejecutada**: 84 carnets profesores generados correctamente para 2026
+
+### 12:00 — Perfil socio: campos editables reorganizados
+
+- **Emails** (UMA y otros) pasan a ser **editables** por el socio
+- **Datos académicos** (centro, departamento, área, jubilación, categoría) pasan a ser **editables**
+- **Domiciliación bancaria** pasa a **solo lectura** con mensaje "contacta con la secretaría"
+- `actions.ts` migrado a `createAdminClient()` para evitar bloqueo por RLS recién activado
+
+### 13:00 — Nuevo rol "Actividades"
+
+- **`lib/roles.ts`**: nuevo tipo `'actividades'` con permisos: dashboard, socios, actividades
+- **`admin/layout.tsx`**: etiqueta "Actividades" añadida al badge de rol
+- **`admin/roles/page.tsx`**: nuevo rol en desplegable, permisos label y tabla visual
+- **Fix BD**: `ALTER TABLE admin_roles DROP CONSTRAINT admin_roles_rol_check` y recreado con el nuevo valor
+
+### 14:00 — Emails de actividades con datos bancarios
+
+- **`lib/email.ts`**: nueva función `enviarConfirmacionInscripcionActividad()` con bloque de pago (IBAN, titular, concepto) cuando precio > 0
+- **`api/socio/actividades/route.ts`**: se envía email de confirmación al socio al inscribirse
+- **`lib/email.ts`**: `enviarConfirmacionInvitadoActividad()` actualizada — acepta `precio`, muestra IBAN cuando precio > 0, siempre se envía (antes solo si gratuita)
+- **Variables de entorno** añadidas en Vercel: `ASPROJUMA_IBAN`, `ASPROJUMA_TITULAR`
+- **Aviso pago** en ficha de actividad actualizado: indica que se recibirá email con datos bancarios
+
+### 15:00 — Seguridad y datos
+
+- **RLS activado** en todas las tablas de Supabase (`ALTER TABLE ... ENABLE ROW LEVEL SECURITY`)
+- **Policy** `actividades_publicas` creada para SELECT de actividades publicadas
+- **Limpieza de datos**: eliminados títulos "Sr. D." / "Sra. Dña." del campo `nombre` en tabla socios mediante UPDATE con REGEXP_REPLACE
+- **Actividades**: vista socio ahora muestra solo su propia inscripción y sus invitados (no todos los inscritos)
+
+### Ficheros creados
+- `src/lib/carnet-jpg.ts` — función compartida de generación JPG
+- `src/app/api/admin/carnets/enviar-masivo/route.ts` — envío masivo de carnets por email
+
+### Ficheros modificados
+- `src/app/solicitud-alta/page.tsx` — textos "Socio Cooperante"
+- `src/app/socio/perfil/page.tsx` — fix email, búsqueda ilike
+- `src/app/socio/perfil/ProfileForm.tsx` — emails y académicos editables, bancaria solo lectura
+- `src/app/socio/perfil/actions.ts` — nuevos campos, usa adminClient
+- `src/app/socio/carnet/page.tsx` — búsqueda ilike
+- `src/app/socio/cuotas/page.tsx` — búsqueda ilike
+- `src/app/socio/actividades/page.tsx` — búsqueda ilike
+- `src/app/socio/actividades/[id]/page.tsx` — solo inscripción propia, aviso pago mejorado
+- `src/app/api/socio/actividades/route.ts` — email confirmación socio e invitados
+- `src/app/api/carnet/route.tsx` — usa carnet-jpg.ts compartido
+- `src/app/api/admin/carnets/generar-anual/route.ts` — JPG, fix cooperantes
+- `src/app/api/admin/enviar-carnet/route.ts` — JPG
+- `src/app/api/admin/socios/[id]/editar/actions.ts` — búsqueda ilike
+- `src/app/admin/carnets/page.tsx` — 2 pasos: generar + enviar
+- `src/app/admin/layout.tsx` — label rol actividades
+- `src/app/admin/roles/page.tsx` — nuevo rol actividades
+- `src/lib/roles.ts` — tipo y permisos rol actividades
+- `src/lib/email.ts` — email inscripción socio e invitados con IBAN
+
+### Pendiente para próxima sesión
+
+- [ ] **Acompañante vs Invitado**: distinguir tipo en `actividades_invitados` — acompañante paga el socio, invitado paga él mismo; email diferente según tipo; informar quién invita
+- [ ] **Fix generación carnets cooperantes**: relanzar "Generar carnets 2026" para incluir cooperantes (solo se generaron 84 profesores)
+- [ ] **Comunicaciones**: envío masivo de emails a grupos de socios por tipo/estado
+- [ ] **Actividades — recordatorio 48h**: email automático a inscritos antes de la actividad
+- [ ] **Actividades — exportar CSV**: lista de inscritos descargable desde admin
+- [ ] **Variables Vercel** pendientes: `ASPROJUMA_IAS`, `ASPROJUMA_BIC`
+
+---
+
 ## 2026-04-10 — Invitados en Actividades, Carnet JPG y fixes UX
 
 ### Implementado

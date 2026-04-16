@@ -67,15 +67,18 @@
 ---
 
 ## FASE 2 — Carnets digitales ✅ COMPLETADA
-**Completada:** 2026-04-02
+**Completada:** 2026-04-16
 
 - [x] Diseño del carnet digital (fondo azul degradado, logo UMA, datos del socio)
 - [x] Generación PDF con `@react-pdf/renderer` — tamaño tarjeta CR80
 - [x] Código QR con URL de verificación pública
 - [x] Página pública de verificación de carnet por QR (`/verificar/[id]`)
-- [x] Botón "Descargar PDF" en área privada del socio
+- [x] Botón "Descargar JPG" en área privada del socio
 - [x] Envío de carnet por email al socio desde admin
 - [x] Generación masiva anual de carnets (Admin → Carnets)
+- [x] **Migración PDF → JPG**: carnets generados como JPG (alta resolución), PDFs borrados del Storage
+- [x] **Envío masivo**: botón "Enviar carnets por email" tras generación (paso 2 en admin/carnets)
+- [x] **Fix cooperantes**: generación incluye socios con num_cooperante además de num_socio
 
 ---
 
@@ -102,6 +105,7 @@
 - [x] Panel `/admin/roles` para asignar y eliminar roles
 - [x] Nav admin condicional según rol del usuario
 - [x] Todos los API routes protegidos con permisos por rol
+- [x] **Nuevo rol `actividades`**: acceso a dashboard, socios y gestión de actividades (2026-04-16)
 
 Matriz de permisos:
 | Sección | Tesorero | Secretario | Junta | Presidente | Admin |
@@ -154,8 +158,9 @@ Matriz de permisos:
 
 ## Pendientes transversales
 
-- [ ] **Configurar variables de entorno bancarias** en Vercel: `ASPROJUMA_IAS`, `ASPROJUMA_IBAN`, `ASPROJUMA_BIC`
-- [ ] **Actualizar** `NEXT_PUBLIC_APP_URL=https://asprojuma.es` en Vercel cuando el dominio esté verde
+- [ ] **Configurar variables de entorno bancarias** en Vercel: `ASPROJUMA_IAS`, `ASPROJUMA_BIC` (IBAN y TITULAR ya configurados)
+- [x] **`ASPROJUMA_IBAN`** y **`ASPROJUMA_TITULAR`** configurados en Vercel (2026-04-16)
+- [x] **`NEXT_PUBLIC_APP_URL=https://asprojuma.es`** configurado en Vercel
 - [ ] RGPD: política de privacidad, registro de consentimientos, derecho al olvido
 - [ ] Seguridad: rate limiting en formularios públicos, auditoría de cambios
 - [ ] Notificación al admin cuando llega nueva solicitud de alta
@@ -166,6 +171,7 @@ Matriz de permisos:
 
 ## 📋 Planificado
 
+- **Acompañante vs Invitado**: distinguir tipo en actividades — acompañante paga el socio, invitado paga él mismo; email diferente; informar quién invita
 - **Comunicaciones**: envío masivo de emails a grupos de socios (por tipo/estado)
 - **Actividades — recordatorio 48h**: email automático a inscritos antes de la actividad
 - **Actividades — exportar CSV**: lista de inscritos descargable desde admin
