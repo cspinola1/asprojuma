@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { tienePermiso } from '@/lib/roles'
 import { NextRequest, NextResponse } from 'next/server'
-import { enviarConfirmacionInvitadoActividad } from '@/lib/email'
+import { enviarConfirmacionInvitadoActividad, enviarConfirmacionAcompañanteActividad } from '@/lib/email'
 
 export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
   const supabase = await createClient()
@@ -28,13 +28,20 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
 
-  const { nombre, email, precio, notas } = await request.json()
+  const { nombre, email, precio, notas, tipo } = await request.json()
   if (!nombre?.trim()) return NextResponse.json({ error: 'El nombre es obligatorio' }, { status: 400 })
 
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('actividades_invitados')
-    .insert({ actividad_id: Number(params.id), nombre, email: email || null, precio: precio ?? null, notas: notas || null })
+    .insert({
+      actividad_id: Number(params.id),
+      nombre,
+      email: email || null,
+      precio: precio ?? null,
+      notas: notas || null,
+      tipo: tipo ?? 'acompañante',
+    })
     .select()
     .single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -53,7 +60,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
   const { data: invitado } = await admin
     .from('actividades_invitados')
-    .select('nombre, email, actividades(titulo, fecha_inicio, lugar)')
+    .select('nombre, email, tipo, precio, actividades(titulo, fecha_inicio, lugar), socios:inscrito_por_socio_id(nombre, apellidos)')
     .eq('id', invitadoId)
     .single()
 
@@ -68,13 +75,23 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   if (estado === 'pagado' && invitado?.email) {
     try {
       const act = invitado.actividades as unknown as { titulo: string; fecha_inicio: string; lugar: string | null } | null
+      const socioInscriptor = invitado.socios as unknown as { nombre: string | null; apellidos: string | null } | null
       if (act) {
         const fecha = new Date(act.fecha_inicio + 'T00:00:00').toLocaleDateString('es-ES', {
           weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
         })
-        await enviarConfirmacionInvitadoActividad(
-          invitado.email, invitado.nombre, act.titulo, fecha, act.lugar, true
-        )
+        if (invitado.tipo === 'acompañante') {
+          await enviarConfirmacionAcompañanteActividad(
+            invitado.email, invitado.nombre, act.titulo, fecha, act.lugar,
+            socioInscriptor?.nombre ?? '', socioInscriptor?.apellidos ?? '',
+          )
+        } else {
+          await enviarConfirmacionInvitadoActividad(
+            invitado.email, invitado.nombre, act.titulo, fecha, act.lugar, true,
+            invitado.precio ?? 0,
+            socioInscriptor?.nombre ?? '', socioInscriptor?.apellidos ?? '',
+          )
+        }
       }
     } catch { /* no bloquear */ }
   }

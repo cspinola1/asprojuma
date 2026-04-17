@@ -21,6 +21,7 @@ interface Invitado {
   id: number
   nombre: string
   email: string | null
+  tipo: 'acompañante' | 'invitado'
   estado: 'inscrito' | 'pagado' | 'cancelado'
   fecha_inscripcion: string
   fecha_pago: string | null
@@ -50,6 +51,7 @@ export function InscripcionesAdmin({ actividadId, precio, precioInvitado }: {
   const [nuevoNombre, setNuevoNombre] = useState('')
   const [nuevoEmail, setNuevoEmail] = useState('')
   const [nuevoNotas, setNuevoNotas] = useState('')
+  const [nuevoTipo, setNuevoTipo] = useState<'acompañante' | 'invitado'>('acompañante')
   const [añadiendo, setAñadiendo] = useState(false)
   const [mostrarForm, setMostrarForm] = useState(false)
 
@@ -123,11 +125,13 @@ export function InscripcionesAdmin({ actividadId, precio, precioInvitado }: {
         email: nuevoEmail || null,
         precio: (precioInvitado ?? precio) || null,
         notas: nuevoNotas || null,
+        tipo: nuevoTipo,
       }),
     })
     setNuevoNombre('')
     setNuevoEmail('')
     setNuevoNotas('')
+    setNuevoTipo('acompañante')
     setMostrarForm(false)
     setAñadiendo(false)
     await cargar()
@@ -242,6 +246,20 @@ export function InscripcionesAdmin({ actividadId, precio, precioInvitado }: {
               </div>
             </div>
             <div>
+              <label className="block text-xs text-gray-500 mb-1">Tipo</label>
+              <div className="flex gap-4">
+                {(['acompañante', 'invitado'] as const).map(t => (
+                  <label key={t} className="flex items-center gap-1.5 cursor-pointer">
+                    <input type="radio" name="nuevoTipo" value={t} checked={nuevoTipo === t}
+                      onChange={() => setNuevoTipo(t)} className="accent-blue-700" />
+                    <span className="text-xs text-gray-700 capitalize">
+                      {t === 'acompañante' ? 'Acompañante (paga el socio)' : 'Invitado (paga él mismo)'}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
               <label className="block text-xs text-gray-500 mb-1">Notas</label>
               <input value={nuevoNotas} onChange={e => setNuevoNotas(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -268,15 +286,18 @@ export function InscripcionesAdmin({ actividadId, precio, precioInvitado }: {
             {invitadosMostrados.map(i => (
               <div key={i.id} className={`flex items-center justify-between border rounded-lg px-3 py-2 ${i.estado === 'cancelado' ? 'border-gray-100 opacity-50' : 'border-gray-200'}`}>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-gray-900 flex items-center gap-2">
                     {i.nombre}
-                    {i.email && <span className="text-gray-400 text-xs ml-2">{i.email}</span>}
+                    {i.email && <span className="text-gray-400 text-xs">{i.email}</span>}
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${i.tipo === 'invitado' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                      {i.tipo === 'invitado' ? 'invitado' : 'acompañante'}
+                    </span>
                   </p>
                   <p className="text-xs text-gray-400">
                     {new Date(i.fecha_inscripcion).toLocaleDateString('es-ES')}
-                    {i.socios && ` · Añadido por ${i.socios.apellidos}, ${i.socios.nombre}`}
+                    {i.socios && ` · ${i.tipo === 'invitado' ? 'Invitado por' : 'Añadido por'} ${i.socios.apellidos}, ${i.socios.nombre}`}
                     {i.fecha_pago && ` · Pagado ${new Date(i.fecha_pago).toLocaleDateString('es-ES')}`}
-                    {i.precio != null && ` · ${Number(i.precio).toFixed(2)} €`}
+                    {i.precio != null && i.tipo === 'invitado' && ` · ${Number(i.precio).toFixed(2)} €`}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">

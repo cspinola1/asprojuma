@@ -41,7 +41,7 @@ export default async function ActividadDetallePage({ params }: { params: { id: s
   const { data: misInvitados } = socio
     ? await admin
         .from('actividades_invitados')
-        .select('id, nombre, email, estado')
+        .select('id, nombre, email, estado, tipo')
         .eq('actividad_id', actividad.id)
         .eq('inscrito_por_socio_id', socio.id)
         .neq('estado', 'cancelado')
@@ -170,7 +170,10 @@ export default async function ActividadDetallePage({ params }: { params: { id: s
                 </p>
                 {(misInvitados ?? []).map((inv) => (
                   <p key={inv.id} className="text-sm text-gray-500 italic">
-                    {inv.nombre} <span className="text-xs">(invitado)</span>
+                    {inv.nombre}{' '}
+                    <span className="text-xs">
+                      {(inv as unknown as { tipo: string }).tipo === 'invitado' ? '(invitado — paga por su cuenta)' : '(acompañante)'}
+                    </span>
                   </p>
                 ))}
               </div>

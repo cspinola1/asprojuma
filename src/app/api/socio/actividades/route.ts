@@ -1,11 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
-import { enviarConfirmacionInvitadoActividad, enviarConfirmacionInscripcionActividad } from '@/lib/email'
+import {
+  enviarConfirmacionInvitadoActividad,
+  enviarConfirmacionAcompañanteActividad,
+  enviarConfirmacionInscripcionActividad,
+} from '@/lib/email'
 
 interface InvitadoInput {
   nombre: string
   email?: string
+  tipo?: 'acompañante' | 'invitado'
 }
 
 export async function POST(request: NextRequest) {
@@ -84,9 +89,10 @@ export async function POST(request: NextRequest) {
       actividad_id: actividadId,
       nombre: inv.nombre,
       email: inv.email || null,
-      precio: precioInv,
+      precio: inv.tipo === 'acompañante' ? (actividad.precio_invitado ?? actividad.precio) : precioInv,
       estado: 'inscrito',
       inscrito_por_socio_id: socio.id,
+      tipo: inv.tipo ?? 'acompañante',
     }))
     const { error: errInv } = await admin.from('actividades_invitados').insert(registros)
     if (errInv) return NextResponse.json({ error: errInv.message }, { status: 500 })
@@ -96,8 +102,19 @@ export async function POST(request: NextRequest) {
     })
     for (const inv of invitados) {
       if (inv.email) {
-        try { await enviarConfirmacionInvitadoActividad(inv.email, inv.nombre, actividad.titulo, fecha, actividad.lugar, false, precioInv) }
-        catch { /* no bloquear */ }
+        try {
+          if (inv.tipo === 'invitado') {
+            await enviarConfirmacionInvitadoActividad(
+              inv.email, inv.nombre, actividad.titulo, fecha, actividad.lugar, false, precioInv,
+              socio.nombre ?? '', socio.apellidos ?? '',
+            )
+          } else {
+            await enviarConfirmacionAcompañanteActividad(
+              inv.email, inv.nombre, actividad.titulo, fecha, actividad.lugar,
+              socio.nombre ?? '', socio.apellidos ?? '',
+            )
+          }
+        } catch { /* no bloquear */ }
       }
     }
     return NextResponse.json({ ok: true })
@@ -173,21 +190,28 @@ export async function POST(request: NextRequest) {
       precio: precioInv,
       estado: 'inscrito',
       inscrito_por_socio_id: socio.id,
+      tipo: inv.tipo ?? 'acompañante',
     }))
     const { error: errInv } = await admin.from('actividades_invitados').insert(registros)
     if (errInv) return NextResponse.json({ error: errInv.message }, { status: 500 })
 
-    // Enviar email a invitados (siempre, con o sin precio)
-    const precioEmailInv = actividad.precio_invitado ?? actividad.precio
     const fechaInv = new Date(actividad.fecha_inicio + 'T00:00:00').toLocaleDateString('es-ES', {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
     })
     for (const inv of invitados) {
       if (inv.email) {
         try {
-          await enviarConfirmacionInvitadoActividad(
-            inv.email, inv.nombre, actividad.titulo, fechaInv, actividad.lugar, false, precioEmailInv
-          )
+          if (inv.tipo === 'invitado') {
+            await enviarConfirmacionInvitadoActividad(
+              inv.email, inv.nombre, actividad.titulo, fechaInv, actividad.lugar, false, precioInv,
+              socio.nombre ?? '', socio.apellidos ?? '',
+            )
+          } else {
+            await enviarConfirmacionAcompañanteActividad(
+              inv.email, inv.nombre, actividad.titulo, fechaInv, actividad.lugar,
+              socio.nombre ?? '', socio.apellidos ?? '',
+            )
+          }
         } catch { /* no bloquear si falla el email */ }
       }
     }

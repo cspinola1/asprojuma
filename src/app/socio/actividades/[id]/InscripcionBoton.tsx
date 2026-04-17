@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 interface InvitadoForm {
   nombre: string
   email: string
+  tipo: 'acompañante' | 'invitado'
 }
 
 interface InvitadoActual {
@@ -38,7 +39,7 @@ export function InscripcionBoton({
   const router = useRouter()
 
   function añadirInvitado() {
-    setInvitados(prev => [...prev, { nombre: '', email: '' }])
+    setInvitados(prev => [...prev, { nombre: '', email: '', tipo: 'acompañante' }])
   }
 
   function actualizarInvitado(i: number, campo: keyof InvitadoForm, valor: string) {
@@ -144,30 +145,48 @@ export function InscripcionBoton({
 
         {/* Formulario añadir invitados extra */}
         {mostrarFormExtra && (
-          <div className="space-y-2">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Nuevos invitados / acompañantes</p>
+          <div className="space-y-3">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Nuevos acompañantes / invitados</p>
             {invitadosExtra.map((inv, i) => (
-              <div key={i} className="flex gap-2 items-start">
-                <div className="flex-1 flex gap-2">
-                  <input type="text" placeholder="Nombre *" value={inv.nombre}
-                    onChange={e => setInvitadosExtra(prev => prev.map((x, idx) => idx === i ? { ...x, nombre: e.target.value } : x))}
-                    className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                  <input type="email" placeholder="Email" value={inv.email}
-                    onChange={e => setInvitadosExtra(prev => prev.map((x, idx) => idx === i ? { ...x, email: e.target.value } : x))}
-                    className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <div key={i} className="border border-gray-200 rounded-lg p-3 space-y-2">
+                <div className="flex gap-2 items-start">
+                  <div className="flex-1 flex gap-2">
+                    <input type="text" placeholder="Nombre *" value={inv.nombre}
+                      onChange={e => setInvitadosExtra(prev => prev.map((x, idx) => idx === i ? { ...x, nombre: e.target.value } : x))}
+                      className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <input type="email" placeholder="Email" value={inv.email}
+                      onChange={e => setInvitadosExtra(prev => prev.map((x, idx) => idx === i ? { ...x, email: e.target.value } : x))}
+                      className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <button type="button" onClick={() => setInvitadosExtra(prev => prev.filter((_, idx) => idx !== i))}
+                    className="text-gray-400 hover:text-red-500 px-1 py-1.5 text-lg leading-none">×</button>
                 </div>
-                <button type="button" onClick={() => setInvitadosExtra(prev => prev.filter((_, idx) => idx !== i))}
-                  className="text-gray-400 hover:text-red-500 px-1 py-1.5 text-lg leading-none">×</button>
+                <div className="flex gap-4">
+                  {(['acompañante', 'invitado'] as const).map(t => (
+                    <label key={t} className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name={`tipo-extra-${i}`}
+                        value={t}
+                        checked={inv.tipo === t}
+                        onChange={() => setInvitadosExtra(prev => prev.map((x, idx) => idx === i ? { ...x, tipo: t } : x))}
+                        className="accent-blue-700"
+                      />
+                      <span className="text-xs text-gray-700">
+                        {t === 'acompañante'
+                          ? `Acompañante${precioAcompExtra > 0 ? ` (pago incluido, ${Number(precioAcompExtra).toFixed(2)} €)` : ' (gratuito)'}`
+                          : 'Invitado (paga por su cuenta)'}
+                      </span>
+                    </label>
+                  ))}
+                </div>
               </div>
             ))}
             {invitadosExtra.length < maxInvExtra && (
-              <button type="button" onClick={() => setInvitadosExtra(prev => [...prev, { nombre: '', email: '' }])}
+              <button type="button" onClick={() => setInvitadosExtra(prev => [...prev, { nombre: '', email: '', tipo: 'acompañante' }])}
                 className="w-full py-1.5 rounded-lg text-sm border border-dashed border-gray-300 text-gray-500 hover:border-blue-400 hover:text-blue-600 transition">
-                + Añadir otro invitado
+                + Añadir otro acompañante / invitado
               </button>
-            )}
-            {precioAcompExtra > 0 && invitadosExtra.length > 0 && (
-              <p className="text-xs text-gray-500">{Number(precioAcompExtra).toFixed(2)} € por invitado</p>
             )}
             <div className="flex gap-2">
               <button onClick={handleAñadirInvitados} disabled={cargando || invitadosExtra.length === 0}
@@ -183,7 +202,7 @@ export function InscripcionBoton({
         )}
 
         {!mostrarFormExtra && maxInvExtra > 0 && (
-          <button type="button" onClick={() => { setMostrarFormExtra(true); setInvitadosExtra([{ nombre: '', email: '' }]) }}
+          <button type="button" onClick={() => { setMostrarFormExtra(true); setInvitadosExtra([{ nombre: '', email: '', tipo: 'acompañante' }]) }}
             className="w-full py-2 rounded-lg text-sm border border-dashed border-gray-300 text-gray-500 hover:border-blue-400 hover:text-blue-600 transition">
             + Añadir invitado / acompañante
           </button>
@@ -208,44 +227,63 @@ export function InscripcionBoton({
 
   const maxInvitados = plazasDisponibles !== null ? Math.max(0, plazasDisponibles - 1) : 20
   const precioAcomp = precioInvitado ?? precio
-  const totalPrecio = precio + invitados.length * precioAcomp
+  const numAcompañantes = invitados.filter(i => i.tipo === 'acompañante').length
+  const totalPrecio = precio + numAcompañantes * precioAcomp
 
   return (
     <div className="space-y-3">
       {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
 
-      {/* Invitados */}
+      {/* Acompañantes e invitados */}
       {invitados.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Invitados / acompañantes</p>
+        <div className="space-y-3">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Acompañantes / invitados</p>
           {invitados.map((inv, i) => (
-            <div key={i} className="flex gap-2 items-start">
-              <div className="flex-1 flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Nombre *"
-                  value={inv.nombre}
-                  onChange={e => actualizarInvitado(i, 'nombre', e.target.value)}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={inv.email}
-                  onChange={e => actualizarInvitado(i, 'email', e.target.value)}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+            <div key={i} className="border border-gray-200 rounded-lg p-3 space-y-2">
+              <div className="flex gap-2 items-start">
+                <div className="flex-1 flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Nombre *"
+                    value={inv.nombre}
+                    onChange={e => actualizarInvitado(i, 'nombre', e.target.value)}
+                    className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={inv.email}
+                    onChange={e => actualizarInvitado(i, 'email', e.target.value)}
+                    className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => eliminarInvitado(i)}
+                  className="text-gray-400 hover:text-red-500 px-1 py-1.5 text-lg leading-none"
+                >×</button>
               </div>
-              <button
-                type="button"
-                onClick={() => eliminarInvitado(i)}
-                className="text-gray-400 hover:text-red-500 px-1 py-1.5 text-lg leading-none"
-              >×</button>
+              <div className="flex gap-4">
+                {(['acompañante', 'invitado'] as const).map(t => (
+                  <label key={t} className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="radio"
+                      name={`tipo-${i}`}
+                      value={t}
+                      checked={inv.tipo === t}
+                      onChange={() => actualizarInvitado(i, 'tipo', t)}
+                      className="accent-blue-700"
+                    />
+                    <span className="text-xs text-gray-700">
+                      {t === 'acompañante'
+                        ? `Acompañante${precioAcomp > 0 ? ` (pago incluido en el tuyo, ${Number(precioAcomp).toFixed(2)} €)` : ' (gratuito)'}`
+                        : 'Invitado (paga por su cuenta)'}
+                    </span>
+                  </label>
+                ))}
+              </div>
             </div>
           ))}
-          {precioAcomp > 0 && (
-            <p className="text-xs text-gray-500">{Number(precioAcomp).toFixed(2)} € por invitado</p>
-          )}
         </div>
       )}
 
@@ -255,13 +293,14 @@ export function InscripcionBoton({
           onClick={añadirInvitado}
           className="w-full py-2 rounded-lg text-sm border border-dashed border-gray-300 text-gray-500 hover:border-blue-400 hover:text-blue-600 transition"
         >
-          + Añadir invitado / acompañante
+          + Añadir acompañante / invitado
         </button>
       )}
 
       {precio > 0 && invitados.length > 0 && (
         <p className="text-xs text-gray-500 text-center">
-          Total a pagar: {Number(totalPrecio).toFixed(2)} € (tú + {invitados.length} invitado{invitados.length !== 1 ? 's' : ''})
+          Total a pagar por ti: {Number(totalPrecio).toFixed(2)} €
+          {numAcompañantes > 0 && ` (incluye ${numAcompañantes} acompañante${numAcompañantes !== 1 ? 's' : ''})`}
         </p>
       )}
 
