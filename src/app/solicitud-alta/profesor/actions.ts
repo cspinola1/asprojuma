@@ -83,6 +83,7 @@ export async function enviarSolicitudProfesor(
       iban: data.iban.replace(/\s/g, '').toUpperCase() || null,
       titular_cuenta: data.titular_cuenta.trim() || null,
       migrado_excel: false,
+      consentimiento_rgpd_fecha: new Date().toISOString(),
     })
     .select('id')
     .single()

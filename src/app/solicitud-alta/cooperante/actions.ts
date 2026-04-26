@@ -84,6 +84,7 @@ export async function enviarSolicitudCooperante(
       titular_cuenta: data.titular_cuenta.trim() || null,
       notas: `AVALISTAS: ${data.avalista1_email} | ${data.avalista2_email}`,
       migrado_excel: false,
+      consentimiento_rgpd_fecha: new Date().toISOString(),
     })
     .select('id')
     .single()

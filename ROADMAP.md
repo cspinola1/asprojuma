@@ -141,7 +141,7 @@ Matriz de permisos:
 - [x] Columna inscritos en listado admin suma socios + invitados (sin cancelados)
 - [ ] Recordatorio automático 48h antes
 - [ ] Lista de espera cuando se completa el aforo
-- [ ] Exportar lista de inscritos a CSV
+- [x] Exportar lista de inscritos a CSV (2026-04-23)
 
 ---
 
@@ -161,7 +161,7 @@ Matriz de permisos:
 - [ ] **Configurar variables de entorno bancarias** en Vercel: `ASPROJUMA_IAS`, `ASPROJUMA_BIC` (IBAN y TITULAR ya configurados)
 - [x] **`ASPROJUMA_IBAN`** y **`ASPROJUMA_TITULAR`** configurados en Vercel (2026-04-16)
 - [x] **`NEXT_PUBLIC_APP_URL=https://asprojuma.es`** configurado en Vercel
-- [ ] RGPD: política de privacidad, registro de consentimientos, derecho al olvido
+- [x] RGPD: política de privacidad, registro de consentimientos, derecho al olvido (2026-04-26)
 - [ ] Seguridad: rate limiting en formularios públicos, auditoría de cambios
 - [ ] Notificación al admin cuando llega nueva solicitud de alta
 - [ ] Portal público con información de actividades (sin login)
@@ -171,7 +171,7 @@ Matriz de permisos:
 
 ## 📋 Planificado
 
-- **Acompañante vs Invitado**: distinguir tipo en actividades — acompañante paga el socio, invitado paga él mismo; email diferente; informar quién invita
+- [x] **Acompañante vs Invitado**: distinguir tipo en actividades — acompañante paga el socio, invitado paga él mismo; email diferente; informar quién invita (2026-04-23)
 - **Comunicaciones**: envío masivo de emails a grupos de socios (por tipo/estado)
 - **Actividades — recordatorio 48h**: email automático a inscritos antes de la actividad
 - **Actividades — exportar CSV**: lista de inscritos descargable desde admin

@@ -5,6 +5,97 @@ Cada entrada incluye fecha, hora y descripción detallada de lo hecho.
 
 ---
 
+## 2026-04-26 — RGPD y fix auth/confirm
+
+### Fix: escáner de correo UMA consume tokens de autenticación
+
+- **Causa raíz**: el sistema de seguridad de correo de UMA ejecuta JavaScript al escanear emails, lo que hacía que `useEffect` en `/auth/confirm` intercambiara el token automáticamente antes de que el socio lo usara. Afectaba tanto a "Olvidé mi contraseña" como a invitaciones.
+- **`src/app/auth/confirm/page.tsx`**: reescritura completa — ya no intercambia el token al cargar la página. Muestra un botón "Confirmar y continuar" que el usuario debe pulsar. Solo entonces se llama a `exchangeCodeForSession` o `verifyOtp`. El estado de error incluye link directo a `/recuperar-contrasena`.
+
+### RGPD — Protección de datos
+
+- **SQL ejecutado**: `ALTER TABLE socios ADD COLUMN consentimiento_rgpd_fecha timestamptz, ADD COLUMN datos_anonimizados boolean NOT NULL DEFAULT false`
+- **`src/lib/types.ts`**: añadidos campos `consentimiento_rgpd_fecha` y `datos_anonimizados` al tipo `Socio`
+- **`src/app/solicitud-alta/profesor/actions.ts`**: guarda `consentimiento_rgpd_fecha: new Date().toISOString()` al insertar nueva solicitud
+- **`src/app/solicitud-alta/cooperante/actions.ts`**: ídem
+- **`src/app/privacidad/page.tsx`** creado: página pública con política de privacidad completa (responsable, datos recogidos, finalidad, base jurídica, conservación, cesión, derechos RGPD, seguridad)
+- **`src/app/api/admin/socios/anonimizar/route.ts`** creado: API POST para anonimizar datos personales de socios de baja/fallecidos — elimina nombre, apellidos, DNI, fecha nacimiento, emails, teléfonos, dirección, IBAN, notas y datos específicos de `socios_profesores`/`socios_cooperantes`. Solo disponible para usuarios con permiso `editar_socio`.
+- **`src/app/admin/socios/[id]/AnonimizarSocio.tsx`** creado: componente con confirmación antes de ejecutar la anonimización
+- **`src/app/admin/socios/[id]/page.tsx`**: nueva sección "Protección de datos" — muestra fecha de consentimiento RGPD (o aviso si es alta anterior a la plataforma), botón "Anonimizar datos (RGPD)" solo visible para socios de baja/fallecido sin anonimizar
+- **`src/app/page.tsx`**: añadido link "Política de privacidad" en el pie de la página pública
+
+### Ficheros creados
+- `src/app/privacidad/page.tsx`
+- `src/app/api/admin/socios/anonimizar/route.ts`
+- `src/app/admin/socios/[id]/AnonimizarSocio.tsx`
+
+### Ficheros modificados
+- `src/app/auth/confirm/page.tsx` — botón de confirmación, previene auto-exchange
+- `src/lib/types.ts` — campos RGPD en Socio
+- `src/app/solicitud-alta/profesor/actions.ts` — guarda fecha consentimiento
+- `src/app/solicitud-alta/cooperante/actions.ts` — guarda fecha consentimiento
+- `src/app/admin/socios/[id]/page.tsx` — sección RGPD + AnonimizarSocio
+- `src/app/page.tsx` — link política de privacidad en footer
+
+### Pendiente para próxima sesión
+
+- [ ] **Relanzar generación carnets 2026** — Admin → Carnets → Paso 1
+- [ ] **Configurar en Vercel**: `ASPROJUMA_IAS`, `ASPROJUMA_BIC`
+- [ ] **Comunicaciones** — envío masivo de emails a grupos de socios
+- [ ] **Actividades — recordatorio 48h** — email automático antes de cada actividad
+- [ ] **Actividades — lista de espera**
+
+---
+
+## 2026-04-23 — Acompañante/Invitado, contraseña segura, fixes BD y Supabase
+
+### 10:00 — Acompañante vs Invitado en actividades
+
+- **Nueva columna `tipo`** en tabla `actividades_invitados` (SQL: `ALTER TABLE ... ADD COLUMN tipo text NOT NULL DEFAULT 'acompañante' CHECK (tipo IN ('acompañante', 'invitado'))`)
+- **`src/lib/email.ts`**: nueva función `enviarConfirmacionAcompañanteActividad()` — email informativo sin datos de pago, indica quién le acompaña. `enviarConfirmacionInvitadoActividad()` acepta ahora `inscritoPorNombre/Apellidos` opcionales para indicar quién invita
+- **`src/app/api/socio/actividades/route.ts`**: `InvitadoInput` incluye `tipo`; lógica de email diferenciada: acompañante → email informativo, invitado → email con IBAN y quién invita
+- **`src/app/socio/actividades/[id]/InscripcionBoton.tsx`**: selector radio Acompañante/Invitado por cada persona añadida; total mostrado al socio solo incluye acompañantes; texto "Total a pagar por ti"
+- **`src/app/socio/actividades/[id]/page.tsx`**: query incluye `tipo`; muestra "(acompañante)" o "(invitado — paga por su cuenta)" en "Mi inscripción"
+- **`src/app/api/admin/actividades/[id]/invitados/route.ts`**: POST acepta `tipo`; PATCH envía email diferente al marcar pagado según tipo; query incluye socio inscriptor
+- **`src/app/admin/actividades/[id]/InscripcionesAdmin.tsx`**: badge azul (acompañante) / morado (invitado) en lista; selector radio en formulario de añadir; texto "Añadido por" / "Invitado por" según tipo
+
+### 11:30 — Nueva contraseña: validación de fortaleza
+
+- **`src/app/nueva-contrasena/page.tsx`**: reescritura completa — barra visual de fortaleza (débil/media/fuerte), requisitos con check en tiempo real (≥8 chars + ≥1 número), indicador de coincidencia en campo confirmar, botón ver/ocultar en ambos campos, botón Guardar deshabilitado hasta cumplir requisitos
+
+### 12:00 — Fix exportar CSV actividades
+
+- **`src/app/api/admin/actividades/[id]/exportar/route.ts`**: precio del socio tomado del precio de la actividad (antes era `null`); columna Tipo muestra 'Acompañante' o 'Invitado' correctamente; query de invitados incluye campo `tipo`
+
+### 14:00 — Seguridad BD y fix Supabase Auth
+
+- **RLS activado** en `socios_cooperantes` y `socios_profesores` (quedaron sin cubrir en sesión anterior): `ALTER TABLE socios_cooperantes ENABLE ROW LEVEL SECURITY` + `ALTER TABLE socios_profesores ENABLE ROW LEVEL SECURITY`
+- **Supabase Auth URL Configuration** corregida: Site URL cambiado de `asprojuma.vercel.app` → `https://asprojuma.es`; Redirect URLs actualizadas a `https://asprojuma.es/auth/callback` y `https://asprojuma.es/auth/confirm`. Causa raíz del error "Email link is invalid or has expired" que sufría el socio Nº146
+
+### Ficheros creados
+- ninguno
+
+### Ficheros modificados
+- `src/lib/email.ts` — nueva función acompañante, parámetros quién invita en invitado
+- `src/app/api/socio/actividades/route.ts` — soporte tipo + emails diferenciados
+- `src/app/socio/actividades/[id]/InscripcionBoton.tsx` — selector tipo + precio diferenciado
+- `src/app/socio/actividades/[id]/page.tsx` — tipo en query y visualización
+- `src/app/api/admin/actividades/[id]/invitados/route.ts` — soporte tipo + email diferenciado
+- `src/app/admin/actividades/[id]/InscripcionesAdmin.tsx` — badge tipo + selector formulario
+- `src/app/nueva-contrasena/page.tsx` — indicador de fortaleza completo
+- `src/app/api/admin/actividades/[id]/exportar/route.ts` — precio socio y tipo en CSV
+
+### Pendiente para próxima sesión
+
+- [ ] **Relanzar generación carnets 2026** — Admin → Carnets → Paso 1, para incluir cooperantes y nombres sin "Sr./Sra."
+- [ ] **Comunicaciones** — envío masivo de emails a grupos de socios por tipo/estado
+- [ ] **Actividades — recordatorio 48h** — email automático a inscritos antes de la actividad
+- [ ] **Actividades — lista de espera** — cuando se completa el aforo
+- [ ] **Variables Vercel** pendientes: `ASPROJUMA_IAS`, `ASPROJUMA_BIC`
+- [ ] **RGPD** — política de privacidad, registro de consentimientos
+
+---
+
 ## 2026-04-16 — Carnets JPG masivos, roles, emails actividades y fixes
 
 ### 10:00 — Fixes UX y textos

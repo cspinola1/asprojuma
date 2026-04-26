@@ -36,6 +36,8 @@ export interface Socio {
   email_principal: string | null
   notas: string | null
   migrado_excel: boolean
+  consentimiento_rgpd_fecha: string | null
+  datos_anonimizados: boolean
   created_at: string
   updated_at: string
 }

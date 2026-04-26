@@ -72,6 +72,11 @@ export default function Home() {
             asprojuma@uma.es
           </a>
         </p>
+        <p className="mt-2 text-xs text-blue-500">
+          <Link href="/privacidad" className="hover:text-blue-300">
+            Política de privacidad
+          </Link>
+        </p>
       </footer>
     </main>
   )

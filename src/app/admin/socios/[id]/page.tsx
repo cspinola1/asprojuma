@@ -6,6 +6,7 @@ import { Socio, SocioProfesor, EstadoSocio } from '@/lib/types'
 import { InvitarSocio } from './InvitarSocio'
 import { EnviarCarnet } from './EnviarCarnet'
 import { EliminarSocio } from './EliminarSocio'
+import { AnonimizarSocio } from './AnonimizarSocio'
 import { tienePermiso } from '@/lib/roles'
 
 const BADGE: Record<EstadoSocio, string> = {
@@ -165,6 +166,30 @@ export default async function SocioDetallePage({ params }: { params: { id: strin
             <EnviarCarnet socioId={s.id} email={s.email_principal} />
           </section>
         )}
+
+        {/* RGPD */}
+        <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Protección de datos</h2>
+          <div className="space-y-3">
+            {s.datos_anonimizados ? (
+              <p className="text-sm text-gray-500 italic">Datos anonimizados (RGPD). Solo se conservan registros contables.</p>
+            ) : (
+              <dl className="grid grid-cols-2 gap-4 mb-3">
+                <div>
+                  <dt className="text-xs text-gray-500 uppercase tracking-wide">Consentimiento RGPD</dt>
+                  <dd className="mt-0.5 text-sm text-gray-900 font-medium">
+                    {s.consentimiento_rgpd_fecha
+                      ? new Date(s.consentimiento_rgpd_fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+                      : <span className="text-gray-400 font-normal">No registrado (alta anterior a plataforma)</span>}
+                  </dd>
+                </div>
+              </dl>
+            )}
+            {puedeEditar && ['baja', 'fallecido'].includes(s.estado) && !s.datos_anonimizados && (
+              <AnonimizarSocio socioId={s.id} nombre={`${s.apellidos}, ${s.nombre}`} />
+            )}
+          </div>
+        </section>
 
         {/* Metadatos + Eliminar */}
         <section className="text-xs text-gray-400 flex gap-4 items-start justify-between">
