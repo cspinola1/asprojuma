@@ -43,6 +43,17 @@ export default function Home() {
               Ya soy socio — entrar
             </Link>
           </div>
+          <p className="mt-8 text-sm text-blue-200">
+            Plataforma interna para socios. Para información sobre ASPROJUMA visita{' '}
+            <a
+              href="https://www.uma.es/asprojuma"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-white"
+            >
+              www.uma.es/asprojuma
+            </a>
+          </p>
         </div>
       </section>
 
