@@ -82,7 +82,8 @@ export default function RemesaDetallePage() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `remesa.${formato}`
+      const primera = cuotas[0]
+      a.download = primera ? `remesa-${primera.anio}-S${primera.semestre}.${formato}` : `remesa.${formato}`
       a.click()
       URL.revokeObjectURL(url)
     } catch {
