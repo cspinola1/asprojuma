@@ -136,9 +136,8 @@ export default function RemesaDetallePage() {
   }
 
   function numSocio(c: CuotaRemesa) {
-    return c.socios.tipo === 'profesor'
-      ? String(c.socios.num_socio ?? '—')
-      : `C${c.socios.num_cooperante ?? '—'}`
+    if (c.socios.tipo === 'profesor') return String(c.socios.num_socio ?? '—')
+    return c.socios.num_cooperante ? `C${String(c.socios.num_cooperante).padStart(3, '0')}` : '—'
   }
 
   if (cargando) return <div className="text-sm text-gray-500 p-8">Cargando…</div>
@@ -206,8 +205,8 @@ export default function RemesaDetallePage() {
                 <td className="px-4 py-3 font-medium text-gray-900">
                   {c.socios.apellidos}, {c.socios.nombre}
                 </td>
-                <td className="px-4 py-3 font-mono text-xs text-gray-500">{c.socios.iban ?? '—'}</td>
-                <td className="px-4 py-3 text-right tabular-nums">{c.importe.toFixed(2)} €</td>
+                <td className="px-4 py-3 font-mono text-sm text-gray-700">{c.socios.iban ?? '—'}</td>
+                <td className="px-4 py-3 text-right tabular-nums font-medium text-gray-900">{c.importe.toFixed(2)} €</td>
                 <td className="px-4 py-3">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ESTADO_BADGE[c.estado] ?? ''}`}>
                     {c.estado}

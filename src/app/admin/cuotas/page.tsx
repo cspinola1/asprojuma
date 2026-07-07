@@ -179,7 +179,7 @@ export default async function CuotasAdminPage({ searchParams }: Props) {
               {cuotas?.map((c: CuotaConSocio) => {
                 const num = c.socios.tipo === 'profesor'
                   ? c.socios.num_socio
-                  : `C${c.socios.num_cooperante}`
+                  : `C${String(c.socios.num_cooperante).padStart(3, '0')}`
                 return (
                   <tr key={c.id} className="hover:bg-gray-50 transition">
                     <td className="px-4 py-3 font-mono text-gray-500 text-xs whitespace-nowrap">{num}</td>

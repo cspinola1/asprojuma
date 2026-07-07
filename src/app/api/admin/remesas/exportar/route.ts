@@ -15,6 +15,13 @@ function csvRow(cols: (string | number | null | undefined)[]): string {
   return cols.map(csvCell).join(';')
 }
 
+function compararSocio(a: { tipo: string; num_socio: number | null; num_cooperante: number | null }, b: typeof a) {
+  if (a.tipo !== b.tipo) return a.tipo === 'profesor' ? -1 : 1
+  const na = a.tipo === 'profesor' ? a.num_socio : a.num_cooperante
+  const nb = b.tipo === 'profesor' ? b.num_socio : b.num_cooperante
+  return (na ?? 0) - (nb ?? 0)
+}
+
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -33,7 +40,6 @@ export async function GET(request: NextRequest) {
     .from('cuotas')
     .select('anio, semestre, importe, fecha_cobro, socios(id, nombre, apellidos, iban, titular_cuenta, fecha_ingreso, num_socio, num_cooperante, tipo)')
     .eq('referencia_remesa', ref)
-    .order('socio_id')
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!cuotas?.length) return NextResponse.json({ error: 'Remesa no encontrada' }, { status: 404 })
@@ -47,6 +53,7 @@ export async function GET(request: NextRequest) {
   const filas = cuotas
     .map(c => ({ ...c, s: c.socios as unknown as SocioRef }))
     .filter(c => c.s?.iban)
+    .sort((a, b) => compararSocio(a.s, b.s))
 
   const deudores: DeudorSEPA[] = filas.map(c => {
     const s = c.s
@@ -76,7 +83,7 @@ export async function GET(request: NextRequest) {
     ])
     const rows = filas.map((c, i) => {
       const s = c.s
-      const num = s.tipo === 'profesor' ? s.num_socio : `C${s.num_cooperante}`
+      const num = s.tipo === 'profesor' ? s.num_socio : `C${String(s.num_cooperante).padStart(3, '0')}`
       const nombreCompleto = `${s.apellidos ?? ''} ${s.nombre ?? ''}`.trim()
       const d = deudores[i]
       return csvRow([

@@ -199,7 +199,7 @@ export default async function SociosAdminPage({ searchParams }: Props) {
             {socios?.map((s) => (
               <tr key={s.id} className="hover:bg-gray-50 transition">
                 <td className="px-4 py-3 font-mono text-gray-500">
-                  {s.tipo === 'profesor' ? s.num_socio : `C${s.num_cooperante}`}
+                  {s.tipo === 'profesor' ? s.num_socio : `C${String(s.num_cooperante).padStart(3, '0')}`}
                 </td>
                 <td className="px-4 py-3 font-medium text-gray-900">
                   {s.apellidos}, {s.nombre}

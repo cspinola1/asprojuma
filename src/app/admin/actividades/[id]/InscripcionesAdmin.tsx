@@ -148,7 +148,8 @@ export function InscripcionesAdmin({ actividadId, precio, precioInvitado }: {
   const totalPendientes = pendientesSocios + pendientesInvitados
 
   function numSocio(i: Inscripcion) {
-    return i.socios.tipo === 'profesor' ? String(i.socios.num_socio ?? '—') : `C${i.socios.num_cooperante ?? '—'}`
+    if (i.socios.tipo === 'profesor') return String(i.socios.num_socio ?? '—')
+    return i.socios.num_cooperante ? `C${String(i.socios.num_cooperante).padStart(3, '0')}` : '—'
   }
 
   return (

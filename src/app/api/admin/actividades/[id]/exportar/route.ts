@@ -45,7 +45,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
   for (const ins of (inscripciones ?? [])) {
     const s = ins.socios as unknown as { num_socio: number | null; num_cooperante: number | null; tipo: string; nombre: string | null; apellidos: string | null; email_principal: string | null; dni: string | null }
-    const num = s.tipo === 'profesor' ? s.num_socio : `C${s.num_cooperante}`
+    const num = s.tipo === 'profesor' ? s.num_socio : `C${String(s.num_cooperante).padStart(3, '0')}`
     rows.push(csvRow(['Socio', num, s.apellidos, s.nombre, s.dni, s.email_principal, ins.estado, ins.fecha_inscripcion?.slice(0, 10), ins.fecha_pago?.slice(0, 10), precioSocio, null, ins.notas]))
   }
 
