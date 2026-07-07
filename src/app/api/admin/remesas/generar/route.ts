@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!socios?.length) return NextResponse.json({ error: 'No hay socios activos con IBAN' }, { status: 400 })
 
-  const msgId = `ASPROJUMA-${anio}-S${semestre}-${Date.now()}`
+  const msgId = `ASPROJUMA-${anio}-S${semestre}-${Date.now().toString(36).toUpperCase()}`
 
   const cuotasInsert = socios.map(s => ({
     socio_id: s.id,
