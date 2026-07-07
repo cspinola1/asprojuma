@@ -91,6 +91,16 @@
 - [x] Panel de gestión de remesa: marcar cobradas / devueltas con motivo
 - [x] Motivos de devolución bancaria (MD01, MD06, AC06, AC04, AM04)
 - [x] Dar de baja a socio desde devolución no resuelta
+- [x] **Titular del CSV**: nombre antes que apellidos en el fallback (2026-07-07)
+- [x] **Secuencia siempre RCUR** (ya no se calcula FRST/RCUR por historial de cobros) (2026-07-07)
+- [x] **Borrar remesas del historial** (solo si no tiene cuotas cobradas) (2026-07-07)
+- [x] **Separar "Generar remesa" de "Descargar XML/CSV"**: generar crea las cuotas una sola vez (bloquea si ya existe remesa para ese año/semestre); descargar solo lee lo ya generado, se puede repetir sin riesgo (2026-07-08)
+- [x] **Endurecido contra sobrescritura**: `insert` en vez de `upsert` — si ya existe remesa para el periodo, la BD rechaza el alta en vez de machacar cuotas existentes (2026-07-08)
+- [x] **Limpieza de IBAN**: se eliminan guiones/espacios al guardar y al generar la remesa (2026-07-07)
+- [x] **Formato nº cooperante unificado a `Cxxx`** (padding a 3 dígitos) en remesas, cuotas, socios y actividades (2026-07-08)
+- [x] **Orden de socios en remesa** por nº de socio/cooperante, no por id interno (2026-07-08)
+- [x] **XML pain.008 adaptado a Triodos** (esquema `.001.08`, `BICFI`, `ChrgBr`, `CdtrSchmeId` a nivel de remesa, `CreDtTm` con `Z` UTC) — **remesa 2026-S1 enviada y aceptada con éxito por Triodos** (2026-07-08)
+- [x] Corregidos 2 IBAN inválidos en BD (dígito de control / guion suelto) detectados al validar contra el fichero de diciembre 2025
 
 ### Comunicaciones (pendiente)
 - [ ] Enviar email a grupos de socios (por tipo, estado, etc.)
@@ -158,7 +168,7 @@ Matriz de permisos:
 
 ## Pendientes transversales
 
-- [ ] **Configurar variables de entorno bancarias** en Vercel: `ASPROJUMA_IAS`, `ASPROJUMA_BIC` (IBAN y TITULAR ya configurados)
+- [x] **Configurar variables de entorno bancarias** en Vercel: `ASPROJUMA_IAS`, `ASPROJUMA_BIC` (confirmado funcionando en envío real a Triodos, 2026-07-08)
 - [x] **`ASPROJUMA_IBAN`** y **`ASPROJUMA_TITULAR`** configurados en Vercel (2026-04-16)
 - [x] **`NEXT_PUBLIC_APP_URL=https://asprojuma.es`** configurado en Vercel
 - [x] RGPD: política de privacidad, registro de consentimientos, derecho al olvido (2026-04-26)

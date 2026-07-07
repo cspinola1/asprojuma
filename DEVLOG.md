@@ -5,6 +5,58 @@ Cada entrada incluye fecha, hora y descripción detallada de lo hecho.
 
 ---
 
+## 2026-07-08 — Remesas SEPA: envío real a Triodos y saneamiento de IBAN
+
+### Implementado
+
+- **Titular del CSV** (`src/app/api/admin/remesas/generar/route.ts`): el fallback sin `titular_cuenta` ahora construye "Nombre Apellidos" en vez de "Apellidos Nombre".
+- **Secuencia siempre RCUR**: eliminada la lógica que marcaba FRST para socios sin historial de cobros.
+- **Borrar remesas** (`src/app/api/admin/remesas/cuotas/route.ts`, `RemesasClient.tsx`): nuevo `DELETE`, bloqueado si la remesa tiene cuotas ya cobradas; icono 🗑 en el historial.
+- **Separación generar/descargar**:
+  - `src/app/api/admin/remesas/generar/route.ts` — ahora solo crea las cuotas `pendiente` (bloquea si ya existe remesa para ese año/semestre, mostrando la fecha de cobro de la existente).
+  - `src/app/api/admin/remesas/exportar/route.ts` (nuevo) — lee la remesa ya generada y construye el XML/CSV bajo demanda, sin tocar la BD. Se puede descargar en ambos formatos tantas veces como se quiera.
+  - `RemesasClient.tsx`: botón único "Generar remesa" (ya no autorrellena la fecha de cobro — hay que elegirla explícitamente). Ficha de remesa (`[referencia]/page.tsx`) con los botones de descarga.
+- **Anti-sobrescritura**: `insert` en vez de `upsert(onConflict)` al crear cuotas — si ya existen para ese socio/año/semestre, la propia BD rechaza el alta con una violación de restricción única, en vez de machacarlas en silencio.
+- **Limpieza de IBAN**: se eliminan guiones/espacios/caracteres no alfanuméricos al guardar (alta profesor/cooperante, edición admin) y al generar la remesa (XML y CSV).
+- **Formato `Cxxx`**: número de cooperante con padding a 3 dígitos, unificado en remesas, cuotas, socios y actividades (antes `C1`, `C58`... ahora `C001`, `C058`...).
+- **Orden en remesa**: por nº de socio/nº de cooperante (antes por `id` interno de BD, producía saltos raros).
+- **Historial de remesas con `force-dynamic`**: la página listaba datos obsoletos porque Next.js puede cachear las consultas a Supabase en un Server Component aunque la ruta ya sea dinámica (mismo problema que ya se había arreglado antes en `actividades/[id]` y `solicitudes`).
+- **XML pain.008 adaptado a Triodos** (`src/lib/sepa.ts`) — comparado contra un fichero real ya aceptado por el banco (`ASPRO25-B.XML`, dic-2025):
+  - Esquema `pain.008.001.08` (antes `.001.02`)
+  - `<BICFI>` en vez de `<BIC>`
+  - `<ChrgBr>SLEV</ChrgBr>` añadido a nivel de `PmtInf`
+  - `<CdtrSchmeId>` una sola vez por `PmtInf` (antes repetido por transacción)
+  - `<InitgPty>` incluye el identificador de acreedor (IAS/CIF)
+  - Eliminado `<Purp>`, que el fichero de referencia no lleva
+  - `msgId` acortado a base36 (antes timestamp en ms → superaba el límite `Max35Text` de 35 caracteres al concatenar `-RCUR`)
+  - `CreDtTm` corregido — `replace('Z','+00:00').slice(0,19)` eliminaba siempre el indicador de zona horaria; ahora es un `dateTime` UTC válido con `Z`
+- **Saneamiento de IBAN en BD**: cruce de los 108 socios activos con IBAN contra el fichero de diciembre 2025 (mismo banco, remesa ya aceptada) + validación de dígito de control (mod-97) → 2 IBAN corregidos:
+  - id 89, Vicente Víctor Fernández González (nº 122): `ES391280784380100000000` → `ES3901280784380100004366`
+  - id 696, María Elena Martín Artiles (nº 153): `ES590182-3370670201519535` (con guion) → `ES5901823370670201519535`
+  - id 47, Manuel Medina Texeira (nº 79): `ES7621108945532200101450` → `ES7621008945532200101450`
+
+### Decisiones técnicas
+
+- **Generar ≠ Descargar**: generar una remesa es una acción de una sola vez por año/semestre (crea las cuotas); descargar el fichero es una operación de solo lectura, repetible. Si hace falta regenerar, hay que borrar primero la remesa existente — evita reescribir cuotas ya cobradas/devueltas sin querer.
+- **`NOTPROVIDED` en `BICFI` de deudores**: no tenemos un directorio IBAN→BIC; se mantiene el placeholder estándar SEPA post-2016 (BIC no obligatorio). El fichero de referencia de Triodos sí trae BIC reales, pero no hay evidencia de que `NOTPROVIDED` sea rechazado — a vigilar si vuelve a dar error.
+
+### Problemas encontrados y soluciones
+
+- **`cvc-maxLength-valid` en Triodos** (`PmtInfId` de 36 caracteres, máx. 35) → `msgId` acortado a base36.
+- **"Instrumento local" con valor inválido ("")** en Triodos, pese a que `<LclInstrm><Cd>CORE</Cd></LclInstrm>` estaba bien formado → causa real: `CreDtTm` sin zona horaria (dateTime "naive"), corregido.
+- **"IBAN no válido"** en Triodos (×3) → 3 registros con IBAN corrupto en BD (dígito de control o carácter suelto), corregidos tras cruce con el fichero de diciembre 2025.
+- **Remesa no aparecía en el historial** tras generarla → caché de Next.js en el Server Component; solucionado con `export const dynamic = 'force-dynamic'`.
+- **`git push` se colgaba repetidamente** desde el entorno del agente (Git Credential Manager pidiendo login interactivo que el agente no puede completar) → el usuario tuvo que ejecutar `git push` manualmente varias veces desde su propia terminal.
+
+### Pendiente para próxima sesión
+
+- [ ] `admin/cuotas/page.tsx` y `admin/socios/page.tsx` podrían tener el mismo problema de caché que `admin/remesas` (Server Component sin `force-dynamic`) — no confirmado, no reportado por el usuario, pendiente de revisar si da problemas.
+- [ ] Vigilar si Triodos llega a rechazar `BICFI = NOTPROVIDED` en los deudores (no tenemos IBAN→BIC real).
+- [ ] Comunicaciones — envío masivo de emails a grupos de socios (arrastrado de sesiones anteriores).
+- [ ] Actividades — recordatorio 48h, lista de espera (arrastrado de sesiones anteriores).
+
+---
+
 ## 2026-04-26 — RGPD y fix auth/confirm
 
 ### Fix: escáner de correo UMA consume tokens de autenticación
