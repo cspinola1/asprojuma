@@ -45,7 +45,12 @@ export async function GET(request: NextRequest) {
   if (!cuotas?.length) return NextResponse.json({ error: 'Remesa no encontrada' }, { status: 404 })
 
   const { anio, semestre } = cuotas[0]
-  const fechaCobro = cuotas[0].fecha_cobro ?? new Date().toISOString().slice(0, 10)
+  const fechaCobro = cuotas[0].fecha_cobro
+  if (!fechaCobro) {
+    return NextResponse.json({
+      error: 'Esta remesa no tiene fecha de cobro guardada (se generó con una versión anterior). Bórrala desde el historial y vuelve a generarla.',
+    }, { status: 400 })
+  }
   const concepto = `ASPROJUMA cuota ${anio} semestre ${semestre}`
 
   type SocioRef = { id: number; nombre: string | null; apellidos: string | null; iban: string | null; titular_cuenta: string | null; fecha_ingreso: string | null; num_socio: number | null; num_cooperante: number | null; tipo: string }
