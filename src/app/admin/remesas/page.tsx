@@ -1,6 +1,8 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import RemesasClient, { RemesaResumen } from './RemesasClient'
 
+export const dynamic = 'force-dynamic'
+
 export default async function RemesasPage() {
   const admin = createAdminClient()
   const { data } = await admin
