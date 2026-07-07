@@ -23,3 +23,35 @@ export async function GET(request: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data ?? [])
 }
+
+export async function DELETE(request: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user || !await tienePermiso(user, 'remesas')) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  }
+
+  const ref = request.nextUrl.searchParams.get('ref')
+  if (!ref) return NextResponse.json({ error: 'ref requerido' }, { status: 400 })
+
+  const admin = createAdminClient()
+
+  const { count, error: countError } = await admin
+    .from('cuotas')
+    .select('id', { count: 'exact', head: true })
+    .eq('referencia_remesa', ref)
+    .eq('estado', 'cobrado')
+
+  if (countError) return NextResponse.json({ error: countError.message }, { status: 500 })
+  if (count && count > 0) {
+    return NextResponse.json({ error: 'No se puede eliminar: la remesa tiene cuotas ya cobradas' }, { status: 400 })
+  }
+
+  const { error } = await admin
+    .from('cuotas')
+    .delete()
+    .eq('referencia_remesa', ref)
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true })
+}

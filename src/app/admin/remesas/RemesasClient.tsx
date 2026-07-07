@@ -24,6 +24,7 @@ export default function RemesasClient({ initialRemesas }: { initialRemesas: Reme
   const [importe, setImporte] = useState(25)
   const [generando, setGenerando] = useState(false)
   const [error, setError] = useState('')
+  const [eliminando, setEliminando] = useState<string | null>(null)
   const remesas = initialRemesas
 
   async function handleGenerar(formato: 'xml' | 'csv') {
@@ -53,6 +54,24 @@ export default function RemesasClient({ initialRemesas }: { initialRemesas: Reme
       setError('Error de red. Inténtalo de nuevo.')
     } finally {
       setGenerando(false)
+    }
+  }
+
+  async function handleEliminar(referencia: string) {
+    if (!confirm(`¿Eliminar la remesa ${referencia}?\n\nSe borrarán sus cuotas pendientes/devueltas. Esta acción no se puede deshacer.`)) return
+    setEliminando(referencia)
+    try {
+      const res = await fetch(`/api/admin/remesas/cuotas?ref=${encodeURIComponent(referencia)}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.error ?? 'Error al eliminar la remesa')
+        return
+      }
+      window.location.reload()
+    } catch {
+      alert('Error de red. Inténtalo de nuevo.')
+    } finally {
+      setEliminando(null)
     }
   }
 
@@ -123,12 +142,14 @@ export default function RemesasClient({ initialRemesas }: { initialRemesas: Reme
           ) : (
             <div className="space-y-2">
               {remesas.map(r => (
-                <Link
+                <div
                   key={r.referencia_remesa}
-                  href={`/admin/remesas/${encodeURIComponent(r.referencia_remesa)}`}
-                  className="block border border-gray-100 rounded-lg px-4 py-3 hover:bg-gray-50 transition"
+                  className="flex items-center gap-2 border border-gray-100 rounded-lg px-4 py-3 hover:bg-gray-50 transition"
                 >
-                  <div className="flex items-center justify-between">
+                  <Link
+                    href={`/admin/remesas/${encodeURIComponent(r.referencia_remesa)}`}
+                    className="flex-1 flex items-center justify-between"
+                  >
                     <div>
                       <p className="text-sm font-medium text-gray-900">
                         {r.anio} · Semestre {r.semestre}
@@ -143,8 +164,16 @@ export default function RemesasClient({ initialRemesas }: { initialRemesas: Reme
                         {r.pendientes > 0 && <span className="text-yellow-700">{r.pendientes}⏳</span>}
                       </div>
                     </div>
-                  </div>
-                </Link>
+                  </Link>
+                  <button
+                    onClick={() => handleEliminar(r.referencia_remesa)}
+                    disabled={eliminando === r.referencia_remesa}
+                    title="Eliminar remesa"
+                    className="text-gray-300 hover:text-red-600 transition p-1 disabled:opacity-50"
+                  >
+                    🗑
+                  </button>
+                </div>
               ))}
             </div>
           )}

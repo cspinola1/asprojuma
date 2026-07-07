@@ -54,13 +54,6 @@ export async function POST(request: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!socios?.length) return NextResponse.json({ error: 'No hay socios activos con IBAN' }, { status: 400 })
 
-  const { data: cuotasPrevias } = await admin
-    .from('cuotas')
-    .select('socio_id')
-    .eq('estado', 'cobrado')
-    .limit(10000)
-
-  const sociosConHistorial = new Set((cuotasPrevias ?? []).map(c => c.socio_id))
   const msgId = `ASPROJUMA-${anio}-S${semestre}-${Date.now()}`
   const concepto = `ASPROJUMA cuota ${anio} semestre ${semestre}`
 
@@ -68,7 +61,7 @@ export async function POST(request: NextRequest) {
     .filter(s => s.iban)
     .map(s => {
       const num = s.tipo === 'profesor' ? s.num_socio : s.num_cooperante
-      const nombre = `${s.apellidos ?? ''} ${s.nombre ?? ''}`.trim()
+      const nombre = `${s.nombre ?? ''} ${s.apellidos ?? ''}`.trim()
       const mandatoId = `ASPROJUMA-${String(s.id).padStart(5, '0')}`
       const fechaMandato = s.fecha_ingreso ?? '2004-01-01'
       return {
@@ -77,7 +70,7 @@ export async function POST(request: NextRequest) {
         iban: s.iban!,
         mandatoId,
         fechaMandato,
-        secuencia: sociosConHistorial.has(s.id) ? 'RCUR' : 'FRST',
+        secuencia: 'RCUR',
         importe,
         endToEndId: `ASPROJUMA-${anio}-S${semestre}-${String(num ?? s.id).padStart(5, '0')}`,
       }
