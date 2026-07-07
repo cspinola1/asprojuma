@@ -51,6 +51,7 @@ export default function RemesaDetallePage() {
   const [motivoModal, setMotivoModal] = useState<{ cuotaId: number; nombre: string } | null>(null)
   const [motivo, setMotivo] = useState(MOTIVOS_DEVOLUCION[0])
   const [msg, setMsg] = useState('')
+  const [descargando, setDescargando] = useState<'xml' | 'csv' | null>(null)
 
   const cargar = useCallback(async () => {
     setCargando(true)
@@ -66,6 +67,30 @@ export default function RemesaDetallePage() {
   const cobradas = cuotas.filter(c => c.estado === 'cobrado').length
   const devueltas = cuotas.filter(c => c.estado === 'devuelto').length
   const totalImporte = cuotas.reduce((s, c) => s + c.importe, 0)
+
+  async function descargar(formato: 'xml' | 'csv') {
+    setDescargando(formato)
+    setMsg('')
+    try {
+      const res = await fetch(`/api/admin/remesas/exportar?ref=${encodeURIComponent(refDecoded)}&formato=${formato}`)
+      if (!res.ok) {
+        const data = await res.json()
+        setMsg(`Error: ${data.error ?? 'no se pudo generar el fichero'}`)
+        return
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `remesa.${formato}`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      setMsg('Error de red. Inténtalo de nuevo.')
+    } finally {
+      setDescargando(null)
+    }
+  }
 
   async function marcarTodasCobradas() {
     if (!confirm(`¿Marcar las ${pendientes} cuotas pendientes como cobradas?`)) return
@@ -133,6 +158,23 @@ export default function RemesaDetallePage() {
       </div>
 
       {msg && <p className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">{msg}</p>}
+
+      <div className="flex gap-3 mb-4">
+        <button
+          onClick={() => descargar('xml')}
+          disabled={descargando !== null}
+          className="bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-800 transition disabled:opacity-50"
+        >
+          {descargando === 'xml' ? 'Generando…' : 'Descargar XML pain.008'}
+        </button>
+        <button
+          onClick={() => descargar('csv')}
+          disabled={descargando !== null}
+          className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition disabled:opacity-50"
+        >
+          {descargando === 'csv' ? 'Generando…' : 'Descargar CSV'}
+        </button>
+      </div>
 
       {pendientes > 0 && (
         <button

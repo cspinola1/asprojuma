@@ -99,7 +99,7 @@ function buildPmtInf(
           <Nm>${escXml(d.nombre)}</Nm>
         </Dbtr>
         <DbtrAcct>
-          <Id><IBAN>${d.iban.replace(/\s/g, '')}</IBAN></Id>
+          <Id><IBAN>${d.iban.replace(/[^A-Za-z0-9]/g, '')}</IBAN></Id>
         </DbtrAcct>
         <Purp><Cd>OTHR</Cd></Purp>
         <RmtInf><Ustrd>${escXml(config.concepto)}</Ustrd></RmtInf>
@@ -120,7 +120,7 @@ function buildPmtInf(
         <Nm>${escXml(config.creditorNombre)}</Nm>
       </Cdtr>
       <CdtrAcct>
-        <Id><IBAN>${config.creditorIBAN.replace(/\s/g, '')}</IBAN></Id>
+        <Id><IBAN>${config.creditorIBAN.replace(/[^A-Za-z0-9]/g, '')}</IBAN></Id>
       </CdtrAcct>
       <CdtrAgt>
         <FinInstnId><BIC>${config.creditorBIC || 'NOTPROVIDED'}</BIC></FinInstnId>

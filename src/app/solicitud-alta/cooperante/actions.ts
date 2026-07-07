@@ -80,7 +80,7 @@ export async function enviarSolicitudCooperante(
       codigo_postal: data.codigo_postal.trim() || null,
       localidad: data.localidad.trim() || null,
       provincia: data.provincia.trim() || null,
-      iban: data.iban.replace(/\s/g, '').toUpperCase() || null,
+      iban: data.iban.replace(/[^A-Za-z0-9]/g, '').toUpperCase() || null,
       titular_cuenta: data.titular_cuenta.trim() || null,
       notas: `AVALISTAS: ${data.avalista1_email} | ${data.avalista2_email}`,
       migrado_excel: false,

@@ -2,18 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { tienePermiso } from '@/lib/roles'
 import { NextRequest, NextResponse } from 'next/server'
-import { generarPain008, DeudorSEPA } from '@/lib/sepa'
-
-function csvCell(v: string | number | null | undefined): string {
-  if (v === null || v === undefined) return ''
-  const s = String(v)
-  if (s.includes(';') || s.includes('"') || s.includes('\n')) return `"${s.replace(/"/g, '""')}"`
-  return s
-}
-
-function csvRow(cols: (string | number | null | undefined)[]): string {
-  return cols.map(csvCell).join(';')
-}
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -30,12 +18,11 @@ export async function POST(request: NextRequest) {
     }, { status: 500 })
   }
 
-  const { anio, semestre, fechaCobro, importe, formato } = await request.json() as {
+  const { anio, semestre, fechaCobro, importe } = await request.json() as {
     anio: number
     semestre: 1 | 2
     fechaCobro: string
     importe: number
-    formato: 'xml' | 'csv'
   }
 
   if (!anio || !semestre || !fechaCobro || !importe) {
@@ -44,95 +31,47 @@ export async function POST(request: NextRequest) {
 
   const admin = createAdminClient()
 
+  const { data: existente } = await admin
+    .from('cuotas')
+    .select('referencia_remesa')
+    .eq('anio', anio)
+    .eq('semestre', semestre)
+    .not('referencia_remesa', 'is', null)
+    .limit(1)
+    .maybeSingle()
+
+  if (existente) {
+    return NextResponse.json({
+      error: `Ya existe una remesa para ${anio} semestre ${semestre} (ref: ${existente.referencia_remesa}). Elimínala desde el historial si quieres generar una nueva.`,
+    }, { status: 400 })
+  }
+
   const { data: socios, error } = await admin
     .from('socios')
-    .select('id, nombre, apellidos, iban, titular_cuenta, fecha_ingreso, num_socio, num_cooperante, tipo')
+    .select('id, iban')
     .eq('estado', 'activo')
     .not('iban', 'is', null)
-    .order('num_socio', { ascending: true, nullsFirst: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!socios?.length) return NextResponse.json({ error: 'No hay socios activos con IBAN' }, { status: 400 })
 
   const msgId = `ASPROJUMA-${anio}-S${semestre}-${Date.now()}`
-  const concepto = `ASPROJUMA cuota ${anio} semestre ${semestre}`
 
-  const deudores: DeudorSEPA[] = socios
-    .filter(s => s.iban)
-    .map(s => {
-      const num = s.tipo === 'profesor' ? s.num_socio : s.num_cooperante
-      const nombre = `${s.nombre ?? ''} ${s.apellidos ?? ''}`.trim()
-      const mandatoId = `ASPROJUMA-${String(s.id).padStart(5, '0')}`
-      const fechaMandato = s.fecha_ingreso ?? '2004-01-01'
-      return {
-        socioId: s.id,
-        nombre: s.titular_cuenta ?? nombre,
-        iban: s.iban!,
-        mandatoId,
-        fechaMandato,
-        secuencia: 'RCUR',
-        importe,
-        endToEndId: `ASPROJUMA-${anio}-S${semestre}-${String(num ?? s.id).padStart(5, '0')}`,
-      }
-    })
-
-  // Crear registros de cuota pendientes
-  const cuotasInsert = deudores.map(d => ({
-    socio_id: d.socioId,
+  const cuotasInsert = socios.map(s => ({
+    socio_id: s.id,
     anio,
     semestre,
     importe,
     estado: 'pendiente',
     metodo_pago: 'domiciliacion',
     referencia_remesa: msgId,
+    fecha_cobro: fechaCobro,
   }))
-  await admin.from('cuotas').upsert(cuotasInsert, { onConflict: 'socio_id,anio,semestre' })
+  const { error: upsertError } = await admin
+    .from('cuotas')
+    .upsert(cuotasInsert, { onConflict: 'socio_id,anio,semestre' })
 
-  // CSV
-  if (formato === 'csv') {
-    const headers = csvRow([
-      'Nº Socio', 'Apellidos y nombre', 'Titular cuenta', 'IBAN',
-      'Importe (€)', 'Fecha cobro', 'Referencia mandato', 'Fecha mandato',
-      'Secuencia', 'End-to-End ID',
-    ])
-    const rows = deudores.map((d, i) => {
-      const s = socios[i]
-      const num = s.tipo === 'profesor' ? s.num_socio : `C${s.num_cooperante}`
-      const nombreCompleto = `${s.apellidos ?? ''} ${s.nombre ?? ''}`.trim()
-      return csvRow([
-        num, nombreCompleto, d.nombre, d.iban,
-        d.importe, fechaCobro, d.mandatoId, d.fechaMandato,
-        d.secuencia, d.endToEndId,
-      ])
-    })
-    const bom = '\uFEFF'
-    const csv = bom + [headers, ...rows].join('\r\n')
-    return new NextResponse(csv, {
-      headers: {
-        'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': `attachment; filename="remesa-${anio}-S${semestre}.csv"`,
-      },
-    })
-  }
+  if (upsertError) return NextResponse.json({ error: upsertError.message }, { status: 500 })
 
-  // XML (por defecto)
-  const xml = generarPain008(
-    {
-      msgId,
-      fechaCobro,
-      creditorNombre: 'ASPROJUMA',
-      creditorIBAN,
-      creditorBIC: process.env.ASPROJUMA_BIC ?? '',
-      creditorIAS,
-      concepto,
-    },
-    deudores,
-  )
-
-  return new NextResponse(xml, {
-    headers: {
-      'Content-Type': 'application/xml; charset=utf-8',
-      'Content-Disposition': `attachment; filename="remesa-${anio}-S${semestre}.xml"`,
-    },
-  })
+  return NextResponse.json({ referencia: msgId, total: socios.length, importe_total: socios.length * importe })
 }

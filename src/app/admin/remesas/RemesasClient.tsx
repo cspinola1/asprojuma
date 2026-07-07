@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export interface RemesaResumen {
@@ -15,6 +16,7 @@ export interface RemesaResumen {
 }
 
 export default function RemesasClient({ initialRemesas }: { initialRemesas: RemesaResumen[] }) {
+  const router = useRouter()
   const anioActual = new Date().getFullYear()
   const [anio, setAnio] = useState(anioActual)
   const [semestre, setSemestre] = useState<1 | 2>(new Date().getMonth() < 6 ? 1 : 2)
@@ -27,29 +29,22 @@ export default function RemesasClient({ initialRemesas }: { initialRemesas: Reme
   const [eliminando, setEliminando] = useState<string | null>(null)
   const remesas = initialRemesas
 
-  async function handleGenerar(formato: 'xml' | 'csv') {
-    if (!confirm(`¿Generar remesa SEPA ${formato.toUpperCase()} para ${anio} semestre ${semestre}?\n\nEsto creará los registros de cuota pendientes.`)) return
+  async function handleGenerar() {
+    if (!confirm(`¿Generar remesa para ${anio} semestre ${semestre}?\n\nEsto creará los registros de cuota pendientes para todos los socios activos con IBAN.`)) return
     setGenerando(true)
     setError('')
     try {
       const res = await fetch('/api/admin/remesas/generar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ anio, semestre, fechaCobro, importe, formato }),
+        body: JSON.stringify({ anio, semestre, fechaCobro, importe }),
       })
+      const data = await res.json()
       if (!res.ok) {
-        const data = await res.json()
         setError(data.error ?? 'Error al generar la remesa')
         return
       }
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `remesa-${anio}-S${semestre}.${formato}`
-      a.click()
-      URL.revokeObjectURL(url)
-      window.location.reload()
+      router.push(`/admin/remesas/${encodeURIComponent(data.referencia)}`)
     } catch {
       setError('Error de red. Inténtalo de nuevo.')
     } finally {
@@ -117,16 +112,10 @@ export default function RemesasClient({ initialRemesas }: { initialRemesas: Reme
 
             {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
 
-            <div className="flex gap-3">
-              <button onClick={() => handleGenerar('xml')} disabled={generando}
-                className="flex-1 bg-blue-700 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition disabled:opacity-50">
-                {generando ? 'Generando…' : 'Descargar XML pain.008'}
-              </button>
-              <button onClick={() => handleGenerar('csv')} disabled={generando}
-                className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition disabled:opacity-50">
-                Descargar CSV
-              </button>
-            </div>
+            <button onClick={handleGenerar} disabled={generando}
+              className="w-full bg-blue-700 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition disabled:opacity-50">
+              {generando ? 'Generando…' : 'Generar remesa'}
+            </button>
 
             <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-800">
               Solo socios con estado <strong>Activo</strong> e IBAN registrado. Los exentos (&gt;85 años) no se incluyen.
