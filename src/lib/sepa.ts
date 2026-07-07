@@ -19,11 +19,6 @@ export interface ConfigRemesa {
   concepto: string
 }
 
-function ibanToBic(): string {
-  // BIC no requerido en zona SEPA desde 2016 — se usa NOTPROVIDED
-  return 'NOTPROVIDED'
-}
-
 function formatAmount(amount: number): string {
   return amount.toFixed(2)
 }
@@ -45,9 +40,9 @@ export function generarPain008(config: ConfigRemesa, deudores: DeudorSEPA[]): st
   ]
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.02"
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.08"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:pain.008.001.02 pain.008.001.02.xsd">
+          xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:pain.008.001.08 pain.008.001.08.xsd">
   <CstmrDrctDbtInitn>
     <GrpHdr>
       <MsgId>${config.msgId}</MsgId>
@@ -56,6 +51,14 @@ export function generarPain008(config: ConfigRemesa, deudores: DeudorSEPA[]): st
       <CtrlSum>${formatAmount(totalImporte)}</CtrlSum>
       <InitgPty>
         <Nm>${escXml(config.creditorNombre)}</Nm>
+        <Id>
+          <OrgId>
+            <Othr>
+              <Id>${escXml(config.creditorIAS)}</Id>
+              <SchmeNm><Prtry>SEPA</Prtry></SchmeNm>
+            </Othr>
+          </OrgId>
+        </Id>
       </InitgPty>
     </GrpHdr>
 ${pmtInfBlocks.join('\n')}
@@ -81,19 +84,9 @@ function buildPmtInf(
             <MndtId>${escXml(d.mandatoId)}</MndtId>
             <DtOfSgntr>${d.fechaMandato}</DtOfSgntr>
           </MndtRltdInf>
-          <CdtrSchmeId>
-            <Id>
-              <PrvtId>
-                <Othr>
-                  <Id>${escXml(config.creditorIAS)}</Id>
-                  <SchmeNm><Prtry>SEPA</Prtry></SchmeNm>
-                </Othr>
-              </PrvtId>
-            </Id>
-          </CdtrSchmeId>
         </DrctDbtTx>
         <DbtrAgt>
-          <FinInstnId><BIC>${ibanToBic()}</BIC></FinInstnId>
+          <FinInstnId><BICFI>NOTPROVIDED</BICFI></FinInstnId>
         </DbtrAgt>
         <Dbtr>
           <Nm>${escXml(d.nombre)}</Nm>
@@ -101,7 +94,6 @@ function buildPmtInf(
         <DbtrAcct>
           <Id><IBAN>${d.iban.replace(/[^A-Za-z0-9]/g, '')}</IBAN></Id>
         </DbtrAcct>
-        <Purp><Cd>OTHR</Cd></Purp>
         <RmtInf><Ustrd>${escXml(config.concepto)}</Ustrd></RmtInf>
       </DrctDbtTxInf>`).join('\n')
 
@@ -123,8 +115,19 @@ function buildPmtInf(
         <Id><IBAN>${config.creditorIBAN.replace(/[^A-Za-z0-9]/g, '')}</IBAN></Id>
       </CdtrAcct>
       <CdtrAgt>
-        <FinInstnId><BIC>${config.creditorBIC || 'NOTPROVIDED'}</BIC></FinInstnId>
+        <FinInstnId><BICFI>${config.creditorBIC || 'NOTPROVIDED'}</BICFI></FinInstnId>
       </CdtrAgt>
+      <ChrgBr>SLEV</ChrgBr>
+      <CdtrSchmeId>
+        <Id>
+          <PrvtId>
+            <Othr>
+              <Id>${escXml(config.creditorIAS)}</Id>
+              <SchmeNm><Prtry>SEPA</Prtry></SchmeNm>
+            </Othr>
+          </PrvtId>
+        </Id>
+      </CdtrSchmeId>
 ${txs}
     </PmtInf>`
 }
