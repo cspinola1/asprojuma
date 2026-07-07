@@ -32,7 +32,7 @@ export function generarPain008(config: ConfigRemesa, deudores: DeudorSEPA[]): st
 
   const totalTxs = deudores.length
   const totalImporte = deudores.reduce((s, d) => s + d.importe, 0)
-  const now = new Date().toISOString().replace('Z', '+00:00').slice(0, 19)
+  const now = new Date().toISOString().slice(0, 19) + 'Z'
 
   const pmtInfBlocks = [
     ...(frst.length ? [buildPmtInf(`${config.msgId}-FRST`, 'FRST', frst, config)] : []),
