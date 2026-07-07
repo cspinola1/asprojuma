@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
   const admin = createAdminClient()
 
-  const { data: existente } = await admin
+  const { data: existente, error: existenteError } = await admin
     .from('cuotas')
     .select('referencia_remesa, fecha_cobro')
     .eq('anio', anio)
@@ -39,6 +39,8 @@ export async function POST(request: NextRequest) {
     .not('referencia_remesa', 'is', null)
     .limit(1)
     .maybeSingle()
+
+  if (existenteError) return NextResponse.json({ error: existenteError.message }, { status: 500 })
 
   if (existente) {
     const fechaExistente = existente.fecha_cobro
@@ -70,11 +72,18 @@ export async function POST(request: NextRequest) {
     referencia_remesa: msgId,
     fecha_cobro: fechaCobro,
   }))
-  const { error: upsertError } = await admin
+  const { error: insertError } = await admin
     .from('cuotas')
-    .upsert(cuotasInsert, { onConflict: 'socio_id,anio,semestre' })
+    .insert(cuotasInsert)
 
-  if (upsertError) return NextResponse.json({ error: upsertError.message }, { status: 500 })
+  if (insertError) {
+    if (insertError.code === '23505') {
+      return NextResponse.json({
+        error: `Ya existe una remesa para ${anio} semestre ${semestre}. Elimínala desde el historial si quieres generar una nueva.`,
+      }, { status: 400 })
+    }
+    return NextResponse.json({ error: insertError.message }, { status: 500 })
+  }
 
   return NextResponse.json({ referencia: msgId, total: socios.length, importe_total: socios.length * importe })
 }
