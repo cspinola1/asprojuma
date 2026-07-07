@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
   const { data: existente } = await admin
     .from('cuotas')
-    .select('referencia_remesa')
+    .select('referencia_remesa, fecha_cobro')
     .eq('anio', anio)
     .eq('semestre', semestre)
     .not('referencia_remesa', 'is', null)
@@ -41,8 +41,11 @@ export async function POST(request: NextRequest) {
     .maybeSingle()
 
   if (existente) {
+    const fechaExistente = existente.fecha_cobro
+      ? new Date(existente.fecha_cobro + 'T00:00:00').toLocaleDateString('es-ES')
+      : 'sin fecha guardada'
     return NextResponse.json({
-      error: `Ya existe una remesa para ${anio} semestre ${semestre} (ref: ${existente.referencia_remesa}). Elimínala desde el historial si quieres generar una nueva.`,
+      error: `Ya existe una remesa para ${anio} semestre ${semestre} (ref: ${existente.referencia_remesa}, fecha de cobro: ${fechaExistente}). Elimínala desde el historial si quieres generar una nueva.`,
     }, { status: 400 })
   }
 

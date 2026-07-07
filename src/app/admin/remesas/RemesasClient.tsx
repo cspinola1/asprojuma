@@ -20,9 +20,7 @@ export default function RemesasClient({ initialRemesas }: { initialRemesas: Reme
   const anioActual = new Date().getFullYear()
   const [anio, setAnio] = useState(anioActual)
   const [semestre, setSemestre] = useState<1 | 2>(new Date().getMonth() < 6 ? 1 : 2)
-  const [fechaCobro, setFechaCobro] = useState(
-    new Date().getMonth() < 6 ? `${anioActual}-06-15` : `${anioActual}-12-15`
-  )
+  const [fechaCobro, setFechaCobro] = useState('')
   const [importe, setImporte] = useState(25)
   const [generando, setGenerando] = useState(false)
   const [error, setError] = useState('')
@@ -30,6 +28,10 @@ export default function RemesasClient({ initialRemesas }: { initialRemesas: Reme
   const remesas = initialRemesas
 
   async function handleGenerar() {
+    if (!fechaCobro) {
+      setError('Selecciona la fecha de cobro.')
+      return
+    }
     if (!confirm(`¿Generar remesa para ${anio} semestre ${semestre}?\n\nEsto creará los registros de cuota pendientes para todos los socios activos con IBAN.`)) return
     setGenerando(true)
     setError('')
@@ -90,7 +92,7 @@ export default function RemesasClient({ initialRemesas }: { initialRemesas: Reme
               </div>
               <div>
                 <label className="block text-xs text-gray-500 uppercase tracking-wide mb-1">Semestre</label>
-                <select value={semestre} onChange={e => { const s = Number(e.target.value) as 1 | 2; setSemestre(s); setFechaCobro(s === 1 ? `${anio}-06-15` : `${anio}-12-15`) }}
+                <select value={semestre} onChange={e => setSemestre(Number(e.target.value) as 1 | 2)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option value={1}>1º semestre (junio)</option>
                   <option value={2}>2º semestre (diciembre)</option>
