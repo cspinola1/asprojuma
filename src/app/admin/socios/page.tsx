@@ -34,7 +34,7 @@ const SORT_DB_COL: Record<SortCol, string> = {
 }
 
 interface Props {
-  searchParams: { q?: string; tipo?: string; estado?: string; sort?: string; dir?: string }
+  searchParams: { q?: string; tipo?: string; estado?: string; sort?: string; dir?: string; sin_fecha_baja?: string }
 }
 
 function SortLink({
@@ -68,9 +68,11 @@ export default async function SociosAdminPage({ searchParams }: Props) {
     ? (searchParams.tipo === 'cooperante' ? 'num_cooperante' : 'num_socio')
     : SORT_DB_COL[sortCol] ?? 'apellidos'
 
+  const sinFechaBaja = searchParams.sin_fecha_baja === '1'
+
   let query = supabase
     .from('socios')
-    .select('id, tipo, estado, num_socio, num_cooperante, apellidos, nombre, email_principal, fecha_ingreso, socios_profesores(centro)')
+    .select('id, tipo, estado, num_socio, num_cooperante, apellidos, nombre, email_principal, fecha_ingreso, fecha_baja, socios_profesores(centro)')
     .order(dbCol, { ascending: sortDir === 'asc' })
 
   // Ordenación secundaria por apellidos cuando no es la columna principal
@@ -81,7 +83,9 @@ export default async function SociosAdminPage({ searchParams }: Props) {
   if (searchParams.tipo === 'profesor' || searchParams.tipo === 'cooperante') {
     query = query.eq('tipo', searchParams.tipo as TipoSocio)
   }
-  if (searchParams.estado) {
+  if (sinFechaBaja) {
+    query = query.eq('estado', 'baja').is('fecha_baja', null)
+  } else if (searchParams.estado) {
     query = query.eq('estado', searchParams.estado as EstadoSocio)
   }
   if (searchParams.q) {
@@ -100,6 +104,12 @@ export default async function SociosAdminPage({ searchParams }: Props) {
     })
   }
 
+  const { count: countSinFechaBaja } = await supabase
+    .from('socios')
+    .select('id', { count: 'exact', head: true })
+    .eq('estado', 'baja')
+    .is('fecha_baja', null)
+
   const sortProps = { current: sortCol, dir: sortDir, searchParams }
 
   return (
@@ -107,6 +117,14 @@ export default async function SociosAdminPage({ searchParams }: Props) {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Socios</h1>
         <div className="flex items-center gap-3">
+          {!!countSinFechaBaja && (
+            <Link
+              href="/admin/socios?sin_fecha_baja=1"
+              className="text-sm text-orange-700 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition"
+            >
+              ⚠ {countSinFechaBaja} baja{countSinFechaBaja === 1 ? '' : 's'} sin fecha
+            </Link>
+          )}
           <span className="text-sm text-gray-500">{socios?.length ?? 0} registros</span>
           <a
             href={`/api/admin/socios/exportar?q=${encodeURIComponent(searchParams.q ?? '')}&tipo=${encodeURIComponent(searchParams.tipo ?? '')}&estado=${encodeURIComponent(searchParams.estado ?? '')}`}
@@ -151,13 +169,23 @@ export default async function SociosAdminPage({ searchParams }: Props) {
           <option value="pendiente">Pendiente</option>
           <option value="honorario">Honorario</option>
         </select>
+        <label className="flex items-center gap-2 text-sm text-gray-700 border border-gray-300 rounded-lg px-3 py-2 cursor-pointer">
+          <input
+            type="checkbox"
+            name="sin_fecha_baja"
+            value="1"
+            defaultChecked={sinFechaBaja}
+            className="rounded border-gray-300"
+          />
+          Bajas sin fecha
+        </label>
         <button
           type="submit"
           className="bg-blue-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-800 transition"
         >
           Buscar
         </button>
-        {(searchParams.q || searchParams.tipo || searchParams.estado) && (
+        {(searchParams.q || searchParams.tipo || searchParams.estado || sinFechaBaja) && (
           <Link href="/admin/socios" className="px-4 py-2 rounded-lg text-sm border border-gray-300 hover:bg-gray-50 transition">
             Limpiar
           </Link>
@@ -181,6 +209,7 @@ export default async function SociosAdminPage({ searchParams }: Props) {
               <th className="px-4 py-3 text-left">
                 <SortLink col="estado" label="Estado" {...sortProps} />
               </th>
+              <th className="px-4 py-3 text-left">Fecha de baja</th>
               <th className="px-4 py-3 text-left">Email</th>
               <th className="px-4 py-3 text-left">
                 <SortLink col="centro" label="Centro" {...sortProps} />
@@ -191,7 +220,7 @@ export default async function SociosAdminPage({ searchParams }: Props) {
           <tbody className="divide-y divide-gray-100">
             {!socios?.length && (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-gray-400">
+                <td colSpan={8} className="px-4 py-10 text-center text-gray-400">
                   No se encontraron socios
                 </td>
               </tr>
@@ -209,6 +238,13 @@ export default async function SociosAdminPage({ searchParams }: Props) {
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${BADGE[s.estado as EstadoSocio]}`}>
                     {ESTADO_LABEL[s.estado as EstadoSocio]}
                   </span>
+                </td>
+                <td className="px-4 py-3">
+                  {s.fecha_baja
+                    ? <span className="text-gray-500">{s.fecha_baja}</span>
+                    : s.estado === 'baja'
+                      ? <span className="text-orange-700 font-medium">⚠ Sin fecha</span>
+                      : <span className="text-gray-400">—</span>}
                 </td>
                 <td className="px-4 py-3 text-gray-500">{s.email_principal ?? '—'}</td>
                 <td className="px-4 py-3 text-gray-500 truncate max-w-[160px]">{(s as { socios_profesores?: { centro?: string } }).socios_profesores?.centro ?? '—'}</td>
