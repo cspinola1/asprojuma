@@ -8,6 +8,9 @@ const FROM = process.env.RESEND_FROM ?? 'ASPROJUMA <onboarding@resend.dev>'
 const FOOTER = `
   <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
   <p style="color: #9ca3af; font-size: 11px; text-align: center; margin: 0;">
+    Este es un correo automático, no responda a esta dirección.
+  </p>
+  <p style="color: #9ca3af; font-size: 11px; text-align: center; margin: 4px 0 0;">
     ASPROJUMA · asprojuma@uma.es · Edificio Rectorado, Avda. Cervantes 2, 29016 Málaga
   </p>
 `
@@ -315,9 +318,10 @@ export async function enviarEmailAvalistaCooperante(
             <strong>Miembro Cooperante</strong> de ASPROJUMA y le ha indicado como avalista.
           </p>
           <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
-            Si desea confirmar su aval, por favor conteste a este correo o póngase en contacto con
-            la secretaría de la asociación en
-            <a href="mailto:asprojuma@uma.es" style="color: #1e3a5f;">asprojuma@uma.es</a>.
+            <strong>No responda a este correo</strong>, ya que ha sido enviado desde una dirección
+            que no admite respuestas. Si desea confirmar su aval, escriba a
+            <a href="mailto:asprojuma@uma.es?subject=Respuesta%20a%20solicitud%20de%20ingreso%20de%20socio%20cooperante" style="color: #1e3a5f;">asprojuma@uma.es</a>
+            indicando como asunto «Respuesta a solicitud de ingreso de socio cooperante».
           </p>
           <p style="color: #4b5563; font-size: 14px; line-height: 1.6;">
             La solicitud quedará pendiente de aprobación por la Junta Directiva hasta recibir

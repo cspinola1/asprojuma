@@ -105,7 +105,7 @@ export default async function SocioDetallePage({ params }: { params: { id: strin
           <Campo label="DNI / NIF" valor={s.dni} />
           <Campo label="Fecha de nacimiento" valor={s.fecha_nacimiento} />
           <Campo label="Fecha de ingreso" valor={s.fecha_ingreso} />
-          {s.fecha_baja && <Campo label="Fecha de baja" valor={s.fecha_baja} />}
+          {(s.estado === 'baja' || s.fecha_baja) && <Campo label="Fecha de baja" valor={s.fecha_baja} />}
         </Seccion>
 
         {/* Contacto */}

@@ -77,6 +77,9 @@ export async function POST(request: NextRequest) {
           </p>
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
           <p style="color: #9ca3af; font-size: 11px; text-align: center; margin: 0;">
+            Este es un correo automático, no responda a esta dirección.
+          </p>
+          <p style="color: #9ca3af; font-size: 11px; text-align: center; margin: 4px 0 0;">
             ASPROJUMA · asprojuma@uma.es · Edificio Rectorado, Avda. Cervantes 2, 29016 Málaga
           </p>
         </div>
