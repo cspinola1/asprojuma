@@ -34,7 +34,10 @@ const SORT_DB_COL: Record<SortCol, string> = {
 }
 
 interface Props {
-  searchParams: { q?: string; tipo?: string; estado?: string; sort?: string; dir?: string; sin_fecha_baja?: string }
+  searchParams: {
+    q?: string; tipo?: string; estado?: string; sort?: string; dir?: string; sin_fecha_baja?: string
+    ingreso_desde?: string; ingreso_hasta?: string
+  }
 }
 
 function SortLink({
@@ -91,6 +94,12 @@ export default async function SociosAdminPage({ searchParams }: Props) {
   if (searchParams.q) {
     const q = searchParams.q.trim().slice(0, 100).replace(/[%_\\]/g, '\\$&')
     query = query.or(`apellidos.ilike.%${q}%,nombre.ilike.%${q}%,email_principal.ilike.%${q}%,dni.ilike.%${q}%`)
+  }
+  if (searchParams.ingreso_desde) {
+    query = query.gte('fecha_ingreso', searchParams.ingreso_desde)
+  }
+  if (searchParams.ingreso_hasta) {
+    query = query.lte('fecha_ingreso', searchParams.ingreso_hasta)
   }
 
   let { data: socios } = await query.limit(500)
@@ -179,13 +188,32 @@ export default async function SociosAdminPage({ searchParams }: Props) {
           />
           Bajas sin fecha
         </label>
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-gray-500">Ingreso desde</label>
+          <input
+            type="date"
+            name="ingreso_desde"
+            defaultValue={searchParams.ingreso_desde ?? ''}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-gray-500">hasta</label>
+          <input
+            type="date"
+            name="ingreso_hasta"
+            defaultValue={searchParams.ingreso_hasta ?? ''}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
         <button
           type="submit"
           className="bg-blue-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-800 transition"
         >
           Buscar
         </button>
-        {(searchParams.q || searchParams.tipo || searchParams.estado || sinFechaBaja) && (
+        {(searchParams.q || searchParams.tipo || searchParams.estado || sinFechaBaja
+          || searchParams.ingreso_desde || searchParams.ingreso_hasta) && (
           <Link href="/admin/socios" className="px-4 py-2 rounded-lg text-sm border border-gray-300 hover:bg-gray-50 transition">
             Limpiar
           </Link>
@@ -209,6 +237,7 @@ export default async function SociosAdminPage({ searchParams }: Props) {
               <th className="px-4 py-3 text-left">
                 <SortLink col="estado" label="Estado" {...sortProps} />
               </th>
+              <th className="px-4 py-3 text-left">Fecha ingreso</th>
               <th className="px-4 py-3 text-left">Fecha de baja</th>
               <th className="px-4 py-3 text-left">Email</th>
               <th className="px-4 py-3 text-left">
@@ -220,7 +249,7 @@ export default async function SociosAdminPage({ searchParams }: Props) {
           <tbody className="divide-y divide-gray-100">
             {!socios?.length && (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-gray-400">
+                <td colSpan={9} className="px-4 py-10 text-center text-gray-400">
                   No se encontraron socios
                 </td>
               </tr>
@@ -239,6 +268,7 @@ export default async function SociosAdminPage({ searchParams }: Props) {
                     {ESTADO_LABEL[s.estado as EstadoSocio]}
                   </span>
                 </td>
+                <td className="px-4 py-3 text-gray-500">{s.fecha_ingreso ?? '—'}</td>
                 <td className="px-4 py-3">
                   {s.fecha_baja
                     ? <span className="text-gray-500">{s.fecha_baja}</span>
