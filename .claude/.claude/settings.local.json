@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Prj Claude/asprojuma/**)",
+      "WebSearch",
+      "Bash(ls \"c:\\\\Prj Claude\\\\\")",
+      "Read(//c//**)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3000\" -UseBasicParsing -TimeoutSec 5)",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Prj Claude\\\\tourit\\\\web\\\\supabase\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Prj Claude\\\\tourit\\\\web\\\\lib\\\\db\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Prj Claude\\\\tourit\\\\web\\\\lib\\\\generation\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Prj Claude\\\\tourit\\\\web\\\\app\\\\api\\\\generate\\\\stop\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Prj Claude\\\\tourit\\\\web\\\\app\\\\api\\\\admin\\\\seed\")",
+      "PowerShell(Get-Content \"C:\\\\Prj Claude\\\\tourit\\\\web\\\\.env.local\" | Where-Object { $_ -match \"=\" -and $_ -notmatch \"^#\" } | ForEach-Object { $parts = $_ -split \"=\", 2; \"$\\($parts[0]\\)=$\\(if\\($parts[1].Length -gt 0\\){'[SET]'}else{'[EMPTY]'}\\)\" })",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Prj Claude\\\\tourit\\\\web\\\\app\\\\api\\\\admin\\\\verify\")",
+      "Bash(curl -s -X GET \"http://localhost:3000/api/admin/verify\" -H \"x-admin-secret: tourit-dev-secret\")",
+      "Bash(python -m json.tool)"
+    ],
+    "additionalDirectories": [
+      "c:\\Prj Claude\\asprojuma\\src\\app\\api\\carnet",
+      "c:\\Prj Claude\\asprojuma\\src\\app\\socio\\actividades\\[id]",
+      "c:\\Prj Claude\\asprojuma\\src\\app\\socio\\cuotas",
+      "C:\\Prj Claude",
+      "C:\\Prj Claude\\tourit\\web\\app\\city"
+    ]
+  }
+}

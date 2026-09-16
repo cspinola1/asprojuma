@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -X POST \"http://localhost:3000/api/generate/stop\" -H \"x-admin-secret: tourit-dev-secret\" -H \"Content-Type: application/json\" -d \"{\\\\\"stopName\\\\\":\\\\\"Tower of London\\\\\",\\\\\"cityName\\\\\":\\\\\"London\\\\\",\\\\\"country\\\\\":\\\\\"United Kingdom\\\\\",\\\\\"lat\\\\\":51.5081,\\\\\"lng\\\\\":-0.0759,\\\\\"language\\\\\":\\\\\"en\\\\\"}\")",
+      "Bash(Get-Content \"C:\\\\Users\\\\cspin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Prj-Claude-asprojuma--claude\\\\7b80f15c-beaa-4876-9247-d1dc49443479\\\\tasks\\\\b9wlijzlb.output\" -Raw)",
+      "Bash(curl -s -X POST http://localhost:3000/api/generate/stop -H 'x-admin-secret: tourit-dev-secret' -H 'Content-Type: application/json' -d '{\"stopName\":\"Tower of London\",\"cityName\":\"London\",\"country\":\"United Kingdom\",\"lat\":51.5081,\"lng\":-0.0759,\"language\":\"en\"}')",
+      "Bash(curl -v -X POST http://localhost:3000/api/generate/stop -H 'x-admin-secret: tourit-dev-secret' -H 'Content-Type: application/json' -d '{\"stopName\":\"Tower of London\",\"cityName\":\"London\",\"country\":\"United Kingdom\",\"lat\":51.5081,\"lng\":-0.0759,\"language\":\"en\"}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/admin/seed -H 'x-admin-secret: tourit-dev-secret' -H 'Content-Type: application/json' -d '{\"citySlug\":\"london\"}')",
+      "Bash(echo \"Seed started in background PID: $!\")",
+      "Bash(npx kill-port *)",
+      "Bash(npm run *)",
+      "Bash(curl -s \"http://localhost:3000/api/admin/verify\" -H \"x-admin-secret: tourit-dev-secret\")",
+      "PowerShell(Get-ChildItem \"C:\\\\Prj Claude\\\\tourit\" -Recurse | Where-Object { $_.Extension -eq \".sql\" } | Select-Object FullName)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\cspin\\.claude"
+    ]
+  }
+}
