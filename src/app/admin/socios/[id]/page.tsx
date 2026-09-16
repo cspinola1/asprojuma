@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Socio, SocioProfesor, EstadoSocio } from '@/lib/types'
 import { InvitarSocio } from './InvitarSocio'
 import { EnviarCarnet } from './EnviarCarnet'
-import { EliminarSocio } from './EliminarSocio'
+import EliminarDefinitivoSocio from '@/components/EliminarDefinitivoSocio'
 import { AnonimizarSocio } from './AnonimizarSocio'
 import { tienePermiso } from '@/lib/roles'
 
@@ -198,7 +198,12 @@ export default async function SocioDetallePage({ params }: { params: { id: strin
             <span>Actualizado: {new Date(s.updated_at).toLocaleDateString('es-ES')}</span>
             {s.migrado_excel && <span className="text-orange-400">Migrado desde Excel</span>}
           </div>
-          {puedeEditar && <EliminarSocio socioId={s.id} nombre={`${s.apellidos}, ${s.nombre}`} />}
+          {puedeEditar && (
+            <EliminarDefinitivoSocio 
+             socioId={s.id} 
+            claveConfirmacion={s.dni || String(s.num_socio) || String(s.num_cooperante) || ""} 
+            />
+          )}
         </section>
       </div>
     </div>
