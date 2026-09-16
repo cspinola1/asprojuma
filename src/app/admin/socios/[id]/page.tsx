@@ -200,7 +200,7 @@ export default async function SocioDetallePage({ params }: { params: { id: strin
           </div>
           {puedeEditar && (
             <EliminarDefinitivoSocio 
-             socioId={s.id} 
+             socioId={String(s.id)} 
             claveConfirmacion={s.dni || String(s.num_socio) || String(s.num_cooperante) || ""} 
             />
           )}
