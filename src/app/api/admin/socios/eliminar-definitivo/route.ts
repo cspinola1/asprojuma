@@ -5,7 +5,7 @@ export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { confirmacion } = await request.json();
 
   // 1. Validar sesión y rol de admin
