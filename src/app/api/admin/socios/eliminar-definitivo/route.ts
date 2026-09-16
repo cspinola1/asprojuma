@@ -7,8 +7,17 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user || !(await tienePermiso(user, "admin"))) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  // Comprobar autenticación
+  if (!user) {
+    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  }
+
+  // Comprobar si tiene permiso (permite 'admin' o 'editar_socio')
+  const esAdmin = await tienePermiso(user, "admin");
+  const puedeEditar = await tienePermiso(user, "editar_socio");
+
+  if (!esAdmin && !puedeEditar) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
   // Extraer socioId y confirmacion desde el JSON recibido
