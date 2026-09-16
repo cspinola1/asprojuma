@@ -26,11 +26,11 @@ export default function EliminarDefinitivoSocio({ socioId, claveConfirmacion }: 
     setCargando(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/socios/${socioId}/eliminar-definitivo`, {
+      const res = await fetch(`/api/admin/socios/eliminar-definitivo`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ confirmacion: texto }),
-      });
+        body: JSON.stringify({ socioId, confirmacion: texto }),
+    });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Error desconocido.");
