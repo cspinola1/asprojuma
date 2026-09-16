@@ -7,30 +7,28 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Comprobar autenticación
+  // 1. Validar autenticación
   if (!user) {
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   }
 
-  // Comprobar si tiene permiso (permite 'admin' o 'editar_socio')
+  // 2. Validar permisos
   const esAdmin = await tienePermiso(user, "admin");
   const puedeEditar = await tienePermiso(user, "editar_socio");
-
   if (!esAdmin && !puedeEditar) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  // Extraer socioId y confirmacion desde el JSON recibido
   const { socioId, confirmacion } = await request.json();
 
   if (!socioId) {
     return NextResponse.json({ error: "Falta el ID del socio" }, { status: 400 });
   }
 
-  // 1. Obtener datos para el snapshot
+  // 3. Obtener solo los datos base del socio (sin joins complejos)
   const { data: socio, error: fetchError } = await supabase
     .from("socios")
-    .select("*, socios_profesores(*), socios_cooperantes(*)")
+    .select("*")
     .eq("id", socioId)
     .single();
 
@@ -38,20 +36,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Socio no encontrado" }, { status: 404 });
   }
 
-  // 2. Validar texto de confirmación
+  // 4. Validar frase de confirmación
   const clave = socio.dni || socio.num_socio || socio.num_cooperante;
   if (confirmacion !== `ELIMINAR ${clave}`) {
     return NextResponse.json({ error: "El texto de confirmación no coincide" }, { status: 400 });
   }
 
-  // 3. Auditoría
+  // 5. Guardar en auditoría
   await supabase.from("socios_eliminados_log").insert({
     socio_id: socioId,
     eliminado_por: user.email,
     snapshot: socio,
   });
 
-  // 4. Borrado definitivo
+  // 6. Borrado definitivo de la tabla socios
   const { error: deleteError } = await supabase
     .from("socios")
     .delete()
