@@ -1,4 +1,4 @@
-iimport { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { tienePermiso } from "@/lib/roles";
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
